@@ -9,5 +9,6 @@
   "author": {
     "name": "Dmitrii Lipin",
     "email": "dimich3d@ya.ru"
-  }
+  },
+  "wailsjsdir": "./frontend/src/lib"
 }
