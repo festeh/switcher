@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { GetCommandList } from '../lib/wailsjs/go/main/App';
+  import CommandItem from '../lib/CommandItem.svelte';
 
   let commands = [];
 
@@ -13,43 +14,59 @@
   });
 </script>
 
-<h1>Command Switcher</h1>
+<div class="container">
+  <h1>Command Switcher</h1>
 
-<div class="commands-list">
-  <h2>Available Commands</h2>
-  {#if commands.length > 0}
-    <ul>
+  <div class="commands-grid">
+    {#if commands.length > 0}
       {#each commands as command}
-        <li>{command.Name}</li>
+        <div class="grid-item">
+          <CommandItem {command} />
+        </div>
       {/each}
-    </ul>
-  {:else}
-    <p>Loading commands...</p>
-  {/if}
+    {:else}
+      <p class="loading-text">Loading commands...</p>
+    {/if}
+  </div>
 </div>
 
 <style>
-  .commands-list {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-
-  ul {
-    list-style-type: none;
+  :global(body) {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
     padding: 0;
   }
 
-  li {
-    padding: 8px 12px;
-    margin: 5px 0;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-    cursor: pointer;
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
   }
 
-  li:hover {
-    background-color: #e0e0e0;
+  h1 {
+    color: #bb86fc;
+    margin-bottom: 2rem;
+    font-weight: 300;
+    text-align: center;
+  }
+
+  .commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .grid-item {
+    min-height: 120px;
+  }
+
+  .loading-text {
+    color: #bb86fc;
+    font-size: 1.2rem;
+    text-align: center;
+    grid-column: 1 / -1;
   }
 </style>
