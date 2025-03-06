@@ -8,7 +8,7 @@
 
 <style>
   .command-item {
-    background-color: #424242;
+    background-color: #ffffff;
     border-radius: 8px;
     padding: 16px;
     display: flex;
@@ -18,18 +18,18 @@
     transition: all 0.2s ease;
     cursor: pointer;
     height: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .command-item:hover {
-    background-color: #616161;
+    background-color: #f9f9f9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .command-name {
     font-size: 1.2rem;
     font-weight: 500;
-    color: #e0e0e0;
+    color: #333;
   }
 </style>

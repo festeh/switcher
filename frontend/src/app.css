@@ -1,35 +1,32 @@
 :root {
-  /* Material Design Dark Theme Colors */
-  --md-primary: #bb86fc;
+  /* Material Design Light Theme Colors */
+  --md-primary: #6200ee;
   --md-primary-variant: #3700b3;
   --md-secondary: #03dac6;
-  --md-background: #121212;
-  --md-surface: #121212;
-  --md-error: #cf6679;
-  --md-on-primary: #000000;
+  --md-background: #f5f5f5;
+  --md-surface: #ffffff;
+  --md-error: #b00020;
+  --md-on-primary: #ffffff;
   --md-on-secondary: #000000;
-  --md-on-background: #e0e0e0;
-  --md-on-surface: #e0e0e0;
-  --md-on-error: #000000;
+  --md-on-background: #121212;
+  --md-on-surface: #121212;
+  --md-on-error: #ffffff;
 
-  /* Material Design Elevation Overlays */
-  --md-elevation-1: rgba(255, 255, 255, 0.05);
-  --md-elevation-2: rgba(255, 255, 255, 0.07);
-  --md-elevation-3: rgba(255, 255, 255, 0.08);
-  --md-elevation-4: rgba(255, 255, 255, 0.09);
-  --md-elevation-6: rgba(255, 255, 255, 0.11);
-  --md-elevation-8: rgba(255, 255, 255, 0.12);
-  --md-elevation-12: rgba(255, 255, 255, 0.14);
-  --md-elevation-16: rgba(255, 255, 255, 0.15);
-  --md-elevation-24: rgba(255, 255, 255, 0.16);
+  /* Material Design Elevation Shadows */
+  --md-shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --md-shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  --md-shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+  --md-shadow-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  --md-shadow-5: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
 }
 
 html, body {
   margin: 0;
   padding: 0;
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--md-background);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   color: var(--md-on-background);
+  min-height: 100vh;
 }
 
 * {
@@ -54,16 +51,18 @@ button {
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
+  box-shadow: var(--md-shadow-1);
 }
 
 button:hover {
   background-color: var(--md-primary-variant);
+  box-shadow: var(--md-shadow-2);
 }
 
 input, textarea, select {
   background-color: var(--md-surface);
   color: var(--md-on-surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   padding: 8px 12px;
 }

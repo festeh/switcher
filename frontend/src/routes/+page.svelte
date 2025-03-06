@@ -32,11 +32,12 @@
 
 <style>
   :global(body) {
-    background-color: #121212;
-    color: #e0e0e0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #333;
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
   }
 
   .container {
@@ -46,10 +47,11 @@
   }
 
   h1 {
-    color: #bb86fc;
+    color: #6200ee;
     margin-bottom: 2rem;
-    font-weight: 300;
+    font-weight: 500;
     text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
   }
 
   .commands-grid {
@@ -64,7 +66,7 @@
   }
 
   .loading-text {
-    color: #bb86fc;
+    color: #6200ee;
     font-size: 1.2rem;
     text-align: center;
     grid-column: 1 / -1;
