@@ -26,13 +26,17 @@ func checkAlreadyRuns() {
 	for _, pidStr := range runningPIDs {
 		pid, err := strconv.Atoi(pidStr)
 		if err == nil && pid != currentPID {
-			// Another instance is running, send notification and exit
-			exec.Command("notify-send", "Switcher", "Switcher is already running").Run()
-			fmt.Println("Switcher is already running. Exiting.")
-			os.Exit(0)
+			// Another instance is running, try to move its window to current workspace
+			cmd := exec.Command("hyprctl", "dispatch", "focuswindow", "title:switcher")
+			err := cmd.Run()
+			if err == nil {
+				fmt.Println("Focused existing switcher window. Exiting.")
+				os.Exit(0)
+			} else {
+				fmt.Println("Failed to focus existing switcher window:", err)
+			}
 		}
 	}
-
 }
 
 func main() {
