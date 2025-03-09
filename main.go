@@ -26,16 +26,8 @@ func checkAlreadyRuns() {
 	for _, pidStr := range runningPIDs {
 		pid, err := strconv.Atoi(pidStr)
 		if err == nil && pid != currentPID {
-			// Another instance is running, try to move its window to current workspace
-			// First get the current workspace
-			workspaceCmd := exec.Command("hyprctl", "activeworkspace", "-j")
-			workspaceOutput, err := workspaceCmd.Output()
-			if err != nil {
-				fmt.Println("Failed to get current workspace:", err)
-				os.Exit(0)
-			}
 			
-			// Move the window to the current workspace
+      // HACK: if workspace resolution fails, it selects current one
 			moveCmd := exec.Command("hyprctl", "dispatch", "movetoworkspace", "special:current,title:switcher")
 			err = moveCmd.Run()
 			if err != nil {
