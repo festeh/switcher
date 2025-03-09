@@ -32,27 +32,7 @@ func LoadConfig() (Config, error) {
 	configPath := filepath.Join(home, ".config", "switcher", "switcher.toml")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		// Ensure directory exists
-		configDir := filepath.Dir(configPath)
-		if err := os.MkdirAll(configDir, 0755); err != nil {
-			return config, err
-		}
-		
-		// Create example config file
-		exampleConfig := `# Switcher Configuration
-# Each section represents a command
-
-[firefox]
-name = "Firefox"
-run = "firefox"
-
-[terminal]
-name = "Terminal"
-run = "alacritty"
-`
-		if err := os.WriteFile(configPath, []byte(exampleConfig), 0644); err != nil {
-			return config, err
-		}
+		return config, err
 	}
 
 	// Parse the TOML file
