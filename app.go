@@ -50,5 +50,10 @@ func (a *App) Greet(name string) string {
 
 // GetCommandList returns the list of available commands
 func (a *App) GetCommandList() []Command {
-	return GetCommands()
+	config, err := LoadConfig()
+	if err != nil {
+		// Return empty list if config can't be loaded
+		return []Command{}
+	}
+	return config.Commands
 }

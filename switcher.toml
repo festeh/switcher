@@ -1,0 +1,14 @@
+# Switcher Configuration File
+
+# Commands section defines all available commands
+[[Commands]]
+Name = "firefox"
+
+[[Commands]]
+Name = "vscode"
+
+[[Commands]]
+Name = "terminal"
+
+[[Commands]]
+Name = "files"
