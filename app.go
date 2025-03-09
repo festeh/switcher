@@ -64,5 +64,10 @@ func (a *App) Greet(name string) string {
 
 // GetCommandList returns the list of available commands
 func (a *App) GetCommandList() []Command {
-	return a.config.Commands
+	// Convert map to slice for frontend compatibility
+	var commandList []Command
+	for _, cmd := range a.config.Commands {
+		commandList = append(commandList, cmd)
+	}
+	return commandList
 }
