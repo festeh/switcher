@@ -11,7 +11,7 @@ import (
 type Command struct {
 	Name string `toml:"name"`
 	Run  string `toml:"run"`
-  Key  string `toml:"key"`
+	Key  string `toml:"key"`
 }
 
 // Config represents the application configuration

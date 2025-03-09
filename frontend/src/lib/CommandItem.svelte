@@ -1,8 +1,13 @@
 <script>
   export let command;
+  
+  function handleClick() {
+    console.log(`Command clicked: ${command.Name}, Run: ${command.Run}`);
+    // Here you would typically call a function to execute the command
+  }
 </script>
 
-<div class="command-item">
+<div class="command-item" on:click={handleClick}>
   <div class="command-name">{command.Name}</div>
   {#if command.Key}
     <div class="command-key">{command.Key}</div>
