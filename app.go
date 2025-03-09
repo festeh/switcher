@@ -11,7 +11,8 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx    context.Context
+	config Config
 }
 //go:embed assets/letter-s.png
 var iconData []byte
@@ -29,7 +30,19 @@ func onExit() {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	config, err := LoadConfig()
+	if err != nil {
+		// Use default config if loading fails
+		config = Config{
+			Commands: []Command{
+				{Name: "firefox"},
+				{Name: "vscode"},
+			},
+		}
+	}
+	return &App{
+		config: config,
+	}
 }
 
 // startup is called when the app starts. The context is saved
@@ -50,10 +63,5 @@ func (a *App) Greet(name string) string {
 
 // GetCommandList returns the list of available commands
 func (a *App) GetCommandList() []Command {
-	config, err := LoadConfig()
-	if err != nil {
-		// Return empty list if config can't be loaded
-		return []Command{}
-	}
-	return config.Commands
+	return a.config.Commands
 }
