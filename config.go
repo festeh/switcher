@@ -10,6 +10,7 @@ import (
 // Command struct represents a command that can be executed
 type Command struct {
 	Name string
+  Run string
 }
 
 // Config represents the application configuration
