@@ -2,6 +2,12 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -12,6 +18,21 @@ import (
 var assets embed.FS
 
 func main() {
+	// Check if another instance of switcher is already running
+	currentPID := os.Getpid()
+	processes, err := exec.Command("pgrep", "switcher").Output()
+	if err == nil {
+		runningPIDs := strings.Split(strings.TrimSpace(string(processes)), "\n")
+		for _, pidStr := range runningPIDs {
+			pid, err := strconv.Atoi(pidStr)
+			if err == nil && pid != currentPID {
+				// Another instance is running, send notification and exit
+				exec.Command("notify-send", "Switcher", "Switcher is already running").Run()
+				fmt.Println("Switcher is already running. Exiting.")
+				os.Exit(0)
+			}
+		}
+	}
 	// Create an instance of the app structure
 	app := NewApp()
 
