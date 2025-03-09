@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -32,13 +34,11 @@ func onExit() {
 func NewApp() *App {
 	config, err := LoadConfig()
 	if err != nil {
-		// Use default config if loading fails
-		config = Config{
-			Commands: []Command{
-				{Name: "firefox"},
-				{Name: "vscode"},
-			},
-		}
+		// If config can't be loaded, notify user and exit
+		errorMsg := fmt.Sprintf("Failed to load configuration: %v", err)
+		exec.Command("notify-send", "Switcher Error", errorMsg).Run()
+		fmt.Println(errorMsg)
+		os.Exit(1)
 	}
 	return &App{
 		config: config,
