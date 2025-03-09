@@ -27,14 +27,32 @@ func checkAlreadyRuns() {
 		pid, err := strconv.Atoi(pidStr)
 		if err == nil && pid != currentPID {
 			// Another instance is running, try to move its window to current workspace
-			cmd := exec.Command("hyprctl", "dispatch", "focuswindow", "title:switcher")
-			err := cmd.Run()
-			if err == nil {
-				fmt.Println("Focused existing switcher window. Exiting.")
+			// First get the current workspace
+			workspaceCmd := exec.Command("hyprctl", "activeworkspace", "-j")
+			workspaceOutput, err := workspaceCmd.Output()
+			if err != nil {
+				fmt.Println("Failed to get current workspace:", err)
 				os.Exit(0)
-			} else {
-				fmt.Println("Failed to focus existing switcher window:", err)
 			}
+			
+			// Move the window to the current workspace
+			moveCmd := exec.Command("hyprctl", "dispatch", "movetoworkspace", "special:current,title:switcher")
+			err = moveCmd.Run()
+			if err != nil {
+				fmt.Println("Failed to move switcher window:", err)
+				os.Exit(0)
+			}
+			
+			// Then focus the window
+			focusCmd := exec.Command("hyprctl", "dispatch", "focuswindow", "title:switcher")
+			err = focusCmd.Run()
+			if err != nil {
+				fmt.Println("Failed to focus switcher window:", err)
+				os.Exit(0)
+			}
+			
+			fmt.Println("Moved and focused existing switcher window. Exiting.")
+			os.Exit(0)
 		}
 	}
 }
