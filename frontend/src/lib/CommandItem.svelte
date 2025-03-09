@@ -4,6 +4,9 @@
 
 <div class="command-item">
   <div class="command-name">{command.Name}</div>
+  {#if command.Key}
+    <div class="command-key">{command.Key}</div>
+  {/if}
 </div>
 
 <style>
@@ -31,5 +34,16 @@
     font-size: 1.2rem;
     font-weight: 500;
     color: #333;
+  }
+  
+  .command-key {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #666;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    text-transform: uppercase;
   }
 </style>
