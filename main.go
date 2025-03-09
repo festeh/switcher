@@ -55,7 +55,40 @@ func checkAlreadyRuns() {
 	}
 }
 
+func runDoctorCommand() {
+	fmt.Println("Running Switcher doctor...")
+	
+	// Try to load the configuration
+	config, err := LoadConfig()
+	if err != nil {
+		fmt.Printf("❌ Configuration error: %v\n", err)
+		os.Exit(1)
+	}
+	
+	// Print configuration details
+	fmt.Println("✅ Configuration loaded successfully")
+	fmt.Printf("Found %d commands in configuration\n", len(config.Commands))
+	
+	// List the commands
+	if len(config.Commands) > 0 {
+		fmt.Println("Commands:")
+		for i, cmd := range config.Commands {
+			fmt.Printf("  %d. %s\n", i+1, cmd.Name)
+		}
+	} else {
+		fmt.Println("Warning: No commands defined in configuration")
+	}
+	
+	os.Exit(0)
+}
+
 func main() {
+	// Check for doctor command
+	if len(os.Args) > 1 && os.Args[1] == "doctor" {
+		runDoctorCommand()
+		return
+	}
+	
 	checkAlreadyRuns()
 	// Create an instance of the app structure
 	app := NewApp()
