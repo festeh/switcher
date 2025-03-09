@@ -17,6 +17,12 @@ import (
 var assets embed.FS
 
 func checkAlreadyRuns() {
+	// Skip check if in development mode
+	if os.Getenv("WAILS_DEV") != "" {
+		fmt.Println("Development mode detected, skipping process check")
+		return
+	}
+	
 	currentPID := os.Getpid()
 	processes, err := exec.Command("pgrep", "switcher").Output()
 	if err != nil {
