@@ -2,12 +2,29 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"time"
+
+	"github.com/getlantern/systray"
 )
 
 // App struct
 type App struct {
 	ctx context.Context
+}
+//go:embed assets/letter-s.png
+var iconData []byte
+
+func onReady() {
+  systray.SetTitle("switcher")
+  systray.SetTooltip("switcher")
+  systray.AddMenuItem("Quit", "Quit the whole app")
+  systray.SetIcon(iconData)
+}
+
+func onExit() {
+  systray.Quit()
 }
 
 // NewApp creates a new App application struct
@@ -19,6 +36,11 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+  go func() {
+    // Wait for Wails to fully initialize
+    time.Sleep(500 * time.Millisecond)
+    systray.Run(onReady, onExit)
+  }()
 }
 
 // Greet returns a greeting for the given name

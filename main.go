@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -17,22 +16,27 @@ import (
 //go:embed all:frontend/build
 var assets embed.FS
 
-func main() {
-	// Check if another instance of switcher is already running
+func checkAlreadyRuns() {
 	currentPID := os.Getpid()
 	processes, err := exec.Command("pgrep", "switcher").Output()
-	if err == nil {
-		runningPIDs := strings.Split(strings.TrimSpace(string(processes)), "\n")
-		for _, pidStr := range runningPIDs {
-			pid, err := strconv.Atoi(pidStr)
-			if err == nil && pid != currentPID {
-				// Another instance is running, send notification and exit
-				exec.Command("notify-send", "Switcher", "Switcher is already running").Run()
-				fmt.Println("Switcher is already running. Exiting.")
-				os.Exit(0)
-			}
+	if err != nil {
+		return
+	}
+	runningPIDs := strings.Split(strings.TrimSpace(string(processes)), "\n")
+	for _, pidStr := range runningPIDs {
+		pid, err := strconv.Atoi(pidStr)
+		if err == nil && pid != currentPID {
+			// Another instance is running, send notification and exit
+			exec.Command("notify-send", "Switcher", "Switcher is already running").Run()
+			fmt.Println("Switcher is already running. Exiting.")
+			os.Exit(0)
 		}
 	}
+
+}
+
+func main() {
+	checkAlreadyRuns()
 	// Create an instance of the app structure
 	app := NewApp()
 
