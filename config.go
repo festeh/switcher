@@ -29,7 +29,6 @@ func LoadConfig() (Config, error) {
 	
 	configPath := filepath.Join(home, ".config", "switcher.toml")
 	
-	// Check if config file exists, if not, create default config
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		config = Config{
 			Commands: []Command{
