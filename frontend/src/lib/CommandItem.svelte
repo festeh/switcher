@@ -1,28 +1,37 @@
 <script lang="ts">
+	import { parseRun } from '$lib';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { main } from '$lib/wailsjs/go/models';
 
-	export let command;
+	export let command: main.Command;
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyPress);
-
 		return () => {
 			window.removeEventListener('keydown', handleKeyPress);
 		};
 	});
 
-	function handleClick() {
-		console.log(`Command clicked: ${command.Name}, Run: ${command.Run}`);
-		// Here you would typically call a function to execute the command
+	async function handleRun(run: string) {
+		const { command, arg } = parseRun(run);
+		if (command == '/route') {
+			console.log('Navigating to %s', arg);
+			const navRes = goto(arg);
+			console.log('Navigating result', navRes);
+		}
 	}
 
-	function handleKeyPress(event) {
+	async function handleClick() {
+		console.log(`Command clicked: ${command.Name}, Run: ${command.Run}`);
+		await handleRun(command.Run);
+	}
+
+	async function handleKeyPress(event) {
 		const key = event.key.toLowerCase();
 
-		// Find command with matching key
 		if (key == command.Key) {
-			console.log(`Key pressed: ${key}, Command: ${command.Name}, Run: ${command.Run}`);
-			// Here you would typically call a function to execute the command
+			await handleRun(command.Run);
 		}
 	}
 </script>
