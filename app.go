@@ -71,3 +71,10 @@ func (a *App) GetCommandList() []Command {
 	}
 	return commandList
 }
+
+// ExecCommand executes the specified command
+func (a *App) ExecCommand(cmd string) error {
+	// Execute the command
+	command := exec.Command(cmd)
+	return command.Start()
+}
