@@ -19,6 +19,15 @@
 			console.log('Navigating to %s', arg);
 			const navRes = goto(arg);
 			console.log('Navigating result', navRes);
+		} else if (command == '/exec') {
+			console.log('Executing command: %s', arg);
+			try {
+				// Import the ExecCommand function from the Wails runtime
+				const { ExecCommand } = await import('$lib/wailsjs/go/main/App');
+				await ExecCommand(arg);
+			} catch (error) {
+				console.error('Error executing command:', error);
+			}
 		}
 	}
 
