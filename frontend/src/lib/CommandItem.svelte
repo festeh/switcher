@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { main } from '$lib/wailsjs/go/models';
+	import { ExecCommand } from '$lib/wailsjs/go/main/App';
 
 	export let command: main.Command;
 
@@ -22,8 +23,6 @@
 		} else if (command == '/exec') {
 			console.log('Executing command: %s', arg);
 			try {
-				// Import the ExecCommand function from the Wails runtime
-				const { ExecCommand } = await import('$lib/wailsjs/go/main/App');
 				await ExecCommand(arg);
 			} catch (error) {
 				console.error('Error executing command:', error);
