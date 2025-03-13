@@ -73,10 +73,19 @@ func runDoctorCommand() {
 	if len(config.Commands) > 0 {
 		fmt.Println("Commands:")
 		for key, cmd := range config.Commands {
-      fmt.Printf("  %s: %v\n", key, cmd)
+			fmt.Printf("  %s: %v\n", key, cmd)
 		}
 	} else {
 		fmt.Println("Warning: No commands defined in configuration")
+	}
+
+	// Check if exiftool is installed
+	_, err = exec.LookPath("exiftool")
+	if err != nil {
+		fmt.Println("❌ exiftool is not installed or not in PATH")
+		fmt.Println("   Please install exiftool to ensure full functionality")
+	} else {
+		fmt.Println("✅ exiftool is installed")
 	}
 
 	os.Exit(0)
