@@ -75,7 +75,7 @@ func (a *App) GetCommandList() []Command {
 // ExecCommand executes the specified command
 func (a *App) ExecCommand(cmd string) error {
 	// First, move the switcher window to a workspace silently using hyprctl
-	moveCmd := exec.Command("hyprctl", "dispatch", "movetoworkspacesilent", "special:minimized")
+	moveCmd := exec.Command("hyprctl", "dispatch", "movetoworkspacesilent", "9,title:switcher.*")
 	if err := moveCmd.Run(); err != nil {
 		// If hyprctl fails, log the error but continue with the main command
 		fmt.Printf("Failed to move window: %v\n", err)
