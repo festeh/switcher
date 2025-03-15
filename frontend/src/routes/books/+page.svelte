@@ -33,19 +33,10 @@
     </div>
   {:else if error}
     <div class="error">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
       <p>Error: {error}</p>
     </div>
   {:else if bookmarks.length === 0}
     <div class="empty">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-      </svg>
       <p>No books found in your library.</p>
     </div>
   {:else}
@@ -59,27 +50,14 @@
           </tr>
         </thead>
         <tbody>
-          {#each bookmarks as bookmark, i}
-            <tr class={i % 2 === 0 ? 'even' : 'odd'}>
+          {#each bookmarks as bookmark}
+            <tr>
               <td class="title-cell">
-                <div class="book-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                  </svg>
-                </div>
                 <span class="book-title">{bookmark.title || 'Untitled'}</span>
               </td>
               <td>{bookmark.page}</td>
               <td>
-                <button class="action-btn open-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                  </svg>
-                  Open
-                </button>
+                <button class="action-btn open-btn">Open</button>
               </td>
             </tr>
           {/each}
@@ -164,10 +142,6 @@
     color: #d32f2f;
   }
 
-  .error svg, .empty svg {
-    color: inherit;
-    margin-bottom: 0.5rem;
-  }
 
   .books-container {
     background: white;
@@ -200,25 +174,13 @@
     border-bottom: none;
   }
 
-  .books-table tr.even {
-    background-color: #fafafa;
-  }
 
   .books-table tr:hover {
     background-color: #f0f0f0;
   }
 
   .title-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .book-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6200ee;
+    padding-left: 1.5rem;
   }
 
   .book-title {
@@ -246,13 +208,6 @@
     color: white;
   }
 
-  .open-btn svg {
-    transition: all 0.2s;
-  }
-
-  .open-btn:hover svg {
-    color: white;
-  }
 
   @media (max-width: 768px) {
     header {
