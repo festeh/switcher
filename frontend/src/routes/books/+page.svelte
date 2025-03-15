@@ -59,8 +59,8 @@
           </tr>
         </thead>
         <tbody>
-          {#each bookmarks as bookmark, i}
-            <tr class={i % 2 === 0 ? 'even' : 'odd'}>
+          {#each bookmarks as bookmark}
+            <tr>
               <td class="title-cell">
                 <div class="book-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -198,10 +198,6 @@
 
   .books-table tr:last-child td {
     border-bottom: none;
-  }
-
-  .books-table tr.even {
-    background-color: #fafafa;
   }
 
   .books-table tr:hover {
