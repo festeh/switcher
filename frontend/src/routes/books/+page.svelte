@@ -1,4 +1,4 @@
-<script>
+<script type="ts">
   import { onMount } from 'svelte';
   import { GetBookmarks } from '../../lib/wailsjs/go/main/App';
 
@@ -19,7 +19,7 @@
 </script>
 
 <div class="container">
-  <h1>Book Bookmarks</h1>
+  <h1>Books</h1>
 
   {#if loading}
     <div class="loading">Loading bookmarks...</div>
@@ -37,7 +37,6 @@
         <div class="bookmark-card">
           <h3 class="title">{bookmark.title || 'Untitled'}</h3>
           <div class="details">
-            <p class="filename">{bookmark.filename}</p>
             <p class="page">Page: {bookmark.page}</p>
           </div>
           <button class="open-btn">Open</button>
