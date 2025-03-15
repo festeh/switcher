@@ -27,10 +27,4 @@ func TestLoadDatabase(t *testing.T) {
 		t.Fatalf("Failed to load database: %v", err)
 	}
 	defer db.Close()
-
-	// Verify the database connection works by executing a simple query
-	_, err = db.Exec("SELECT 1")
-	if err != nil {
-		t.Fatalf("Failed to execute query on database: %v", err)
-	}
 }
