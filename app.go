@@ -14,8 +14,9 @@ import (
 
 // App struct
 type App struct {
-	ctx    context.Context
-	config Config
+	ctx       context.Context
+	config    Config
+	extractor *books.BookmarkExtractor
 }
 
 //go:embed assets/letter-s.png
@@ -42,9 +43,25 @@ func NewApp() *App {
 		// fmt.Println(errorMsg)
 		// os.Exit(1)
 	}
-	return &App{
+
+	app := &App{
 		config: config,
 	}
+
+	// Initialize the bookmark extractor
+	dbPath, err := books.GetDatabasePath()
+	if err == nil {
+		extractor, err := books.NewBookmarkExtractor(dbPath)
+		if err == nil {
+			app.extractor = extractor
+		} else {
+			fmt.Printf("Failed to create bookmark extractor: %v\n", err)
+		}
+	} else {
+		fmt.Printf("Failed to get database path: %v\n", err)
+	}
+
+	return app
 }
 
 // startup is called when the app starts. The context is saved
@@ -56,6 +73,14 @@ func (a *App) startup(ctx context.Context) {
 		time.Sleep(500 * time.Millisecond)
 		systray.Run(onReady, onExit)
 	}()
+}
+
+// shutdown is called when the app is closing
+func (a *App) shutdown(ctx context.Context) {
+	// Close the database connection if extractor exists
+	if a.extractor != nil && a.extractor.DB != nil {
+		a.extractor.DB.Close()
+	}
 }
 
 // Greet returns a greeting for the given name
@@ -89,18 +114,24 @@ func (a *App) ExecCommand(cmd string) error {
 
 // GetBookmarks returns the list of bookmarks from Zathura
 func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
-	dbPath, err := books.GetDatabasePath()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get database path: %w", err)
-	}
+	if a.extractor == nil {
+		// If extractor wasn't initialized during startup, try again now
+		dbPath, err := books.GetDatabasePath()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get database path: %w", err)
+		}
 
-	extractor, err := books.NewBookmarkExtractor(dbPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create bookmark extractor: %w", err)
+		extractor, err := books.NewBookmarkExtractor(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create bookmark extractor: %w", err)
+		}
+		defer extractor.DB.Close()
+		
+		return extractor.ExtractBookmarks()
 	}
-	defer extractor.DB.Close()
-
-	bookmarks, err := extractor.ExtractBookmarks()
+	
+	// Use the existing extractor
+	bookmarks, err := a.extractor.ExtractBookmarks()
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract bookmarks: %w", err)
 	}
