@@ -224,10 +224,7 @@
   .book-title {
     font-weight: 500;
     color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 300px;
+    line-height: 1.4;
   }
 
   .action-btn {
@@ -266,10 +263,6 @@
     .search-container {
       width: 100%;
       max-width: none;
-    }
-
-    .book-title {
-      max-width: 150px;
     }
   }
 </style>
