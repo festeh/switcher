@@ -19,121 +19,257 @@
 </script>
 
 <div class="container">
-  <h1>Books</h1>
+  <header>
+    <h1>My Books</h1>
+    <div class="search-container">
+      <input type="text" placeholder="Search books..." class="search-input" />
+    </div>
+  </header>
 
   {#if loading}
-    <div class="loading">Loading bookmarks...</div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading your books...</p>
+    </div>
   {:else if error}
     <div class="error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
       <p>Error: {error}</p>
     </div>
   {:else if bookmarks.length === 0}
     <div class="empty">
-      <p>No bookmarks found.</p>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      <p>No books found in your library.</p>
     </div>
   {:else}
-    <div class="bookmarks-list">
-      {#each bookmarks as bookmark}
-        <div class="bookmark-card">
-          <h3 class="title">{bookmark.title || 'Untitled'}</h3>
-          <div class="details">
-            <p class="page">Page: {bookmark.page}</p>
-          </div>
-          <button class="open-btn">Open</button>
-        </div>
-      {/each}
+    <div class="books-container">
+      <table class="books-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Page</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each bookmarks as bookmark, i}
+            <tr class={i % 2 === 0 ? 'even' : 'odd'}>
+              <td class="title-cell">
+                <div class="book-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                  </svg>
+                </div>
+                <span class="book-title">{bookmark.title || 'Untitled'}</span>
+              </td>
+              <td>{bookmark.page}</td>
+              <td>
+                <button class="action-btn open-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  Open
+                </button>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
   {/if}
 </div>
 
 <style>
   .container {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   h1 {
     color: #6200ee;
-    margin-bottom: 2rem;
+    margin: 0;
     font-weight: 500;
-    text-align: center;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 2rem;
+  }
+
+  .search-container {
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #6200ee;
+    box-shadow: 0 2px 8px rgba(98, 0, 238, 0.2);
   }
 
   .loading, .error, .empty {
-    text-align: center;
-    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(98, 0, 238, 0.1);
+    border-radius: 50%;
+    border-top-color: #6200ee;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   .error {
     color: #d32f2f;
   }
 
-  .bookmarks-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+  .error svg, .empty svg {
+    color: inherit;
+    margin-bottom: 0.5rem;
   }
 
-  .bookmark-card {
+  .books-container {
     background: white;
     border-radius: 8px;
-    padding: 1.5rem;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
   }
 
-  .bookmark-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  .books-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
   }
 
-  .title {
-    margin-top: 0;
-    margin-bottom: 1rem;
+  .books-table th {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    font-weight: 500;
     color: #333;
-    font-size: 1.2rem;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .books-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+  }
+
+  .books-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .books-table tr.even {
+    background-color: #fafafa;
+  }
+
+  .books-table tr:hover {
+    background-color: #f0f0f0;
+  }
+
+  .title-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .book-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6200ee;
+  }
+
+  .book-title {
+    font-weight: 500;
+    color: #333;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 300px;
   }
 
-  .details {
-    margin-bottom: 1rem;
-  }
-
-  .filename {
-    font-size: 0.9rem;
-    color: #666;
-    margin: 0.5rem 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .page {
-    font-size: 0.9rem;
-    color: #666;
-    margin: 0.5rem 0;
-  }
-
-  .open-btn {
-    background: #6200ee;
-    color: white;
-    border: none;
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid #6200ee;
+    color: #6200ee;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    width: 100%;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.2s;
   }
 
-  .open-btn:hover {
-    background: #3700b3;
+  .action-btn:hover {
+    background: #6200ee;
+    color: white;
+  }
+
+  .open-btn svg {
+    transition: all 0.2s;
+  }
+
+  .open-btn:hover svg {
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .search-container {
+      width: 100%;
+      max-width: none;
+    }
+
+    .book-title {
+      max-width: 150px;
+    }
   }
 </style>
