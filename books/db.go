@@ -47,7 +47,7 @@ type BookmarkInfo struct {
 
 func getFileTitle(filePath string) string {
 	// exiftool -s -s -s -Title
-	cmd := exec.Command("exiftool", "-s -s -s -Title", filePath)
+	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
 	output, err := cmd.Output()
 	if err != nil {
 		log.Printf("Error executing exiftool on %s: %v", filePath, err)
