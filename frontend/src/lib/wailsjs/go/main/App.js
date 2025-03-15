@@ -6,6 +6,10 @@ export function ExecCommand(arg1) {
   return window['go']['main']['App']['ExecCommand'](arg1);
 }
 
+export function GetBookmarks() {
+  return window['go']['main']['App']['GetBookmarks']();
+}
+
 export function GetCommandList() {
   return window['go']['main']['App']['GetCommandList']();
 }

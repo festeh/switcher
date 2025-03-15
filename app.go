@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
-	"github.com/yourusername/switcher/books"
+	"switcher/books"
 )
 
 // App struct
@@ -112,25 +112,11 @@ func (a *App) ExecCommand(cmd string) error {
 	return command.Start()
 }
 
-// GetBookmarks returns the list of bookmarks from Zathura
 func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
 	if a.extractor == nil {
-		// If extractor wasn't initialized during startup, try again now
-		dbPath, err := books.GetDatabasePath()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get database path: %w", err)
-		}
-
-		extractor, err := books.NewBookmarkExtractor(dbPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create bookmark extractor: %w", err)
-		}
-		defer extractor.DB.Close()
-		
-		return extractor.ExtractBookmarks()
+    return nil, fmt.Errorf("bookmark extractor not initialized")
 	}
 	
-	// Use the existing extractor
 	bookmarks, err := a.extractor.ExtractBookmarks()
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract bookmarks: %w", err)
