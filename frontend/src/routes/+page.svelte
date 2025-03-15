@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { GetCommandList } from '../lib/wailsjs/go/main/App';
   import CommandItem from '../lib/CommandItem.svelte';
