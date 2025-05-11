@@ -1,6 +1,6 @@
 <script type="ts">
   import { onMount } from 'svelte';
-  import { GetBookmarks } from '../../lib/wailsjs/go/main/App';
+  import { GetBookmarks, OpenBook } from '../../lib/wailsjs/go/main/App';
 
   let bookmarks = [];
   let loading = true;
@@ -16,6 +16,16 @@
       console.error("Error loading bookmarks:", err);
     }
   });
+
+  async function handleOpenBook(filename: string) {
+    try {
+      await OpenBook(filename);
+    } catch (err) {
+      // You might want to display this error to the user in a more friendly way
+      console.error("Error opening book:", err);
+      alert(`Error opening book: ${err.message || err}`);
+    }
+  }
 </script>
 
 <div class="container">
@@ -57,7 +67,7 @@
               </td>
               <td>{bookmark.page}</td>
               <td>
-                <button class="action-btn open-btn">Open</button>
+                <button class="action-btn open-btn" on:click={() => handleOpenBook(bookmark.filename)}>Open</button>
               </td>
             </tr>
           {/each}

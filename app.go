@@ -6,6 +6,7 @@ import (
 	"fmt"
 	// "os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -123,4 +124,20 @@ func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
 	}
 
 	return bookmarks, nil
+}
+
+// OpenBook opens the specified book file if it's a PDF.
+func (a *App) OpenBook(filePath string) error {
+	if strings.HasSuffix(strings.ToLower(filePath), ".pdf") {
+		cmd := exec.Command("zathura", filePath)
+		err := cmd.Start()
+		if err != nil {
+			return fmt.Errorf("failed to start zathura for %s: %w", filePath, err)
+		}
+		// It's generally good practice to release resources if Start() is used without Wait()
+		// but for a long-running GUI app like zathura, we typically don't Wait().
+		// The OS will handle the process.
+		return nil
+	}
+	return fmt.Errorf("unsupported file type for: %s. Only PDF files can be opened with zathura", filePath)
 }
