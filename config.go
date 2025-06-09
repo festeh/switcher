@@ -47,7 +47,7 @@ func LoadConfig() (Config, error) {
 	
 	// Set default book scan path if not specified
 	if config.General.BookScanPath == "" {
-		config.General.BookScanPath = filepath.Join(home, "Documents")
+		config.General.BookScanPath = filepath.Join(home, "pCloudDrive")
 	}
 	
 	return config, err
