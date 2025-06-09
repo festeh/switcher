@@ -115,9 +115,9 @@ func (a *App) ExecCommand(cmd string) error {
 
 func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
 	if a.extractor == nil {
-    return nil, fmt.Errorf("bookmark extractor not initialized")
+		return nil, fmt.Errorf("bookmark extractor not initialized")
 	}
-	
+
 	bookmarks, err := a.extractor.ExtractBookmarks()
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract bookmarks: %w", err)
@@ -132,7 +132,6 @@ func (a *App) Hide() error {
 	return cmd.Run()
 }
 
-// OpenBook opens the specified book file if it's a PDF.
 func (a *App) OpenBook(filePath string) error {
 	if strings.HasSuffix(strings.ToLower(filePath), ".pdf") {
 		cmd := exec.Command("zathura", filePath)
@@ -140,9 +139,6 @@ func (a *App) OpenBook(filePath string) error {
 		if err != nil {
 			return fmt.Errorf("failed to start zathura for %s: %w", filePath, err)
 		}
-		// It's generally good practice to release resources if Start() is used without Wait()
-		// but for a long-running GUI app like zathura, we typically don't Wait().
-		// The OS will handle the process.
 		return nil
 	}
 	return fmt.Errorf("unsupported file type for: %s. Only PDF files can be opened with zathura", filePath)
