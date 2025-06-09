@@ -140,6 +140,13 @@ func (a *App) OpenBook(filePath string) error {
 			return fmt.Errorf("failed to start zathura for %s: %w", filePath, err)
 		}
 		return nil
+	} else {
+		// Use foliate for other file types (epub, mobi, etc.)
+		cmd := exec.Command("foliate", filePath)
+		err := cmd.Start()
+		if err != nil {
+			return fmt.Errorf("failed to start foliate for %s: %w", filePath, err)
+		}
+		return nil
 	}
-	return fmt.Errorf("unsupported file type for: %s. Only PDF files can be opened with zathura", filePath)
 }
