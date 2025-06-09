@@ -18,6 +18,7 @@ type App struct {
 	ctx       context.Context
 	config    Config
 	extractor *books.BookmarkExtractor
+	library   *books.Library
 }
 
 //go:embed assets/letter-s.png
@@ -62,6 +63,31 @@ func NewApp() *App {
 		fmt.Printf("Failed to get database path: %v\n", err)
 	}
 
+	// Initialize the library and scan books
+	libraryDbPath, err := books.GetLibraryDatabasePath()
+	if err == nil {
+		library, err := books.NewLibrary(libraryDbPath)
+		if err == nil {
+			app.library = library
+			
+			// Scan books directory with timing
+			fmt.Printf("Starting book library scan from: %s\n", config.General.BookScanPath)
+			startTime := time.Now()
+			
+			err = library.ScanDirectory(config.General.BookScanPath)
+			if err != nil {
+				fmt.Printf("Failed to scan books directory: %v\n", err)
+			} else {
+				elapsed := time.Since(startTime)
+				fmt.Printf("Book library scan completed in: %v\n", elapsed)
+			}
+		} else {
+			fmt.Printf("Failed to create library: %v\n", err)
+		}
+	} else {
+		fmt.Printf("Failed to get library database path: %v\n", err)
+	}
+
 	return app
 }
 
@@ -81,6 +107,11 @@ func (a *App) shutdown(ctx context.Context) {
 	// Close the database connection if extractor exists
 	if a.extractor != nil && a.extractor.DB != nil {
 		a.extractor.DB.Close()
+	}
+	
+	// Close the library database connection if library exists
+	if a.library != nil {
+		a.library.Close()
 	}
 }
 
