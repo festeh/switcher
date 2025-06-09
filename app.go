@@ -144,17 +144,17 @@ func (a *App) ExecCommand(cmd string) error {
 	return command.Start()
 }
 
-func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
-	if a.extractor == nil {
-		return nil, fmt.Errorf("bookmark extractor not initialized")
+func (a *App) GetBooks() ([]books.Book, error) {
+	if a.library == nil {
+		return nil, fmt.Errorf("library not initialized")
 	}
 
-	bookmarks, err := a.extractor.ExtractBookmarks()
+	books, err := a.library.GetAllBooks()
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract bookmarks: %w", err)
+		return nil, fmt.Errorf("failed to get books: %w", err)
 	}
 
-	return bookmarks, nil
+	return books, nil
 }
 
 // Hide the switcher window by moving it to workspace 9

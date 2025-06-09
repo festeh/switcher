@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { GetBookmarks, OpenBook } from '../../lib/wailsjs/go/main/App';
+  import { GetBooks, OpenBook } from '../../lib/wailsjs/go/main/App';
 
-  let bookmarks = [];
+  let books = [];
   let loading = true;
   let error = null;
-  let bookmarkLetterMap = new Map();
+  let bookLetterMap = new Map();
 
   const letterSequence = 'asdfgqwertzxcvb';
 
@@ -21,11 +21,11 @@
     return firstLetter + secondLetter;
   }
 
-  function updateBookmarkLetterMap() {
-    bookmarkLetterMap.clear();
-    bookmarks.forEach((bookmark, index) => {
+  function updateBookLetterMap() {
+    bookLetterMap.clear();
+    books.forEach((book, index) => {
       const letter = generateLetterForIndex(index);
-      bookmarkLetterMap.set(letter, bookmark.filename);
+      bookLetterMap.set(letter, book.filepath);
     });
   }
 
@@ -34,22 +34,22 @@
     if (event.target instanceof HTMLInputElement) return;
     
     const key = event.key.toLowerCase();
-    const filename = bookmarkLetterMap.get(key);
+    const filepath = bookLetterMap.get(key);
     
-    if (filename) {
-      handleOpenBook(filename);
+    if (filepath) {
+      handleOpenBook(filepath);
     }
   }
 
   onMount(async () => {
     try {
-      bookmarks = await GetBookmarks();
-      updateBookmarkLetterMap();
+      books = await GetBooks();
+      updateBookLetterMap();
       loading = false;
     } catch (err) {
-      error = err.message || "Failed to load bookmarks";
+      error = err.message || "Failed to load books";
       loading = false;
-      console.error("Error loading bookmarks:", err);
+      console.error("Error loading books:", err);
     }
 
     // Add keyboard event listener
@@ -61,9 +61,9 @@
     };
   });
 
-  async function handleOpenBook(filename: string) {
+  async function handleOpenBook(filepath: string) {
     try {
-      await OpenBook(filename);
+      await OpenBook(filepath);
     } catch (err) {
       // You might want to display this error to the user in a more friendly way
       console.error("Error opening book:", err);
@@ -89,7 +89,7 @@
     <div class="error">
       <p>Error: {error}</p>
     </div>
-  {:else if bookmarks.length === 0}
+  {:else if books.length === 0}
     <div class="empty">
       <p>No books found in your library.</p>
     </div>
@@ -100,22 +100,22 @@
           <tr>
             <th>Key</th>
             <th>Title</th>
-            <th>Page</th>
+            <th>Format</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {#each bookmarks as bookmark, index}
+          {#each books as book, index}
             <tr>
               <td class="key-cell">
                 <span class="book-key">{generateLetterForIndex(index)}</span>
               </td>
               <td class="title-cell">
-                <span class="book-title">{bookmark.title || 'Untitled'}</span>
+                <span class="book-title">{book.title || 'Untitled'}</span>
               </td>
-              <td>{bookmark.page}</td>
+              <td>{book.format}</td>
               <td>
-                <button class="action-btn open-btn" on:click={() => handleOpenBook(bookmark.filename)}>Open</button>
+                <button class="action-btn open-btn" on:click={() => handleOpenBook(book.filepath)}>Open</button>
               </td>
             </tr>
           {/each}
