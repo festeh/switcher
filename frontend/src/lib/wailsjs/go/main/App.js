@@ -17,3 +17,11 @@ export function GetCommandList() {
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
+
+export function Hide() {
+  return window['go']['main']['App']['Hide']();
+}
+
+export function OpenBook(arg1) {
+  return window['go']['main']['App']['OpenBook'](arg1);
+}

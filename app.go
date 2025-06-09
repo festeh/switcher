@@ -126,6 +126,12 @@ func (a *App) GetBookmarks() ([]books.BookmarkInfo, error) {
 	return bookmarks, nil
 }
 
+// Hide the switcher window by moving it to workspace 9
+func (a *App) Hide() error {
+	cmd := exec.Command("hyprctl", "dispatch", "movetoworkspacesilent", "9,title:switcher")
+	return cmd.Run()
+}
+
 // OpenBook opens the specified book file if it's a PDF.
 func (a *App) OpenBook(filePath string) error {
 	if strings.HasSuffix(strings.ToLower(filePath), ".pdf") {

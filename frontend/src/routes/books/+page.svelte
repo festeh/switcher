@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
   import { onMount } from 'svelte';
   import { GetBookmarks, OpenBook } from '../../lib/wailsjs/go/main/App';
 

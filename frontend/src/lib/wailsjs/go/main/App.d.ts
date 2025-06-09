@@ -10,3 +10,7 @@ export function GetBookmarks():Promise<Array<books.BookmarkInfo>>;
 export function GetCommandList():Promise<Array<main.Command>>;
 
 export function Greet(arg1:string):Promise<string>;
+
+export function Hide():Promise<void>;
+
+export function OpenBook(arg1:string):Promise<void>;
