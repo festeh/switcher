@@ -5,7 +5,7 @@ import {main} from '../models';
 
 export function ExecCommand(arg1:string):Promise<void>;
 
-export function GetBookmarks():Promise<Array<books.BookmarkInfo>>;
+export function GetBooks():Promise<Array<books.Book>>;
 
 export function GetCommandList():Promise<Array<main.Command>>;
 

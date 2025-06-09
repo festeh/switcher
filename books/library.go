@@ -3,6 +3,7 @@ package books
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -74,6 +75,8 @@ func (l *Library) ScanDirectory(rootDir string) error {
 		if !supportedFormats[ext] {
 			return nil
 		}
+
+		log.Printf("Found book: %s\n", path)
 
 		// Check if book already exists in database
 		exists, err := l.bookExists(path)
