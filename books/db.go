@@ -19,6 +19,21 @@ func GetDatabasePath() (string, error) {
 	return filepath.Join(homeDir, ".local/share/zathura/bookmarks.sqlite"), nil
 }
 
+func GetLibraryDatabasePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("error getting home directory: %w", err)
+	}
+	
+	// Create the directory if it doesn't exist
+	dbDir := filepath.Join(homeDir, ".local/share/booklib")
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		return "", fmt.Errorf("error creating database directory: %w", err)
+	}
+	
+	return filepath.Join(dbDir, "library.sqlite"), nil
+}
+
 func LoadDatabase(path string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
