@@ -14,9 +14,15 @@ type Command struct {
 	Key  string `toml:"key"`
 }
 
+// General represents general application settings
+type General struct {
+	BookScanPath string `toml:"book_scan_path"`
+}
+
 // Config represents the application configuration
 type Config struct {
-	Commands map[string]Command
+	General  General            `toml:"general"`
+	Commands map[string]Command `toml:"commands"`
 }
 
 // LoadConfig loads the configuration from the TOML file
@@ -38,5 +44,11 @@ func LoadConfig() (Config, error) {
 
 	// Parse the TOML file
 	_, err = toml.DecodeFile(configPath, &config)
+	
+	// Set default book scan path if not specified
+	if config.General.BookScanPath == "" {
+		config.General.BookScanPath = filepath.Join(home, "Documents")
+	}
+	
 	return config, err
 }
