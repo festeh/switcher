@@ -141,7 +141,6 @@ func (a *App) OpenBook(filePath string) error {
 		}
 		return nil
 	} else {
-		// Use foliate for other file types (epub, mobi, etc.)
 		cmd := exec.Command("foliate", filePath)
 		err := cmd.Start()
 		if err != nil {
