@@ -5,16 +5,60 @@
   let bookmarks = [];
   let loading = true;
   let error = null;
+  let bookmarkLetterMap = new Map();
+
+  const letterSequence = 'asdfgqwertzxcvb';
+
+  function generateLetterForIndex(index: number): string {
+    if (index < letterSequence.length) {
+      return letterSequence[index];
+    }
+    
+    // For indices beyond the basic sequence, use combinations
+    const baseIndex = index - letterSequence.length;
+    const firstLetter = letterSequence[Math.floor(baseIndex / letterSequence.length)];
+    const secondLetter = letterSequence[baseIndex % letterSequence.length];
+    return firstLetter + secondLetter;
+  }
+
+  function updateBookmarkLetterMap() {
+    bookmarkLetterMap.clear();
+    bookmarks.forEach((bookmark, index) => {
+      const letter = generateLetterForIndex(index);
+      bookmarkLetterMap.set(letter, bookmark.filename);
+    });
+  }
+
+  function handleKeyPress(event: KeyboardEvent) {
+    // Ignore if user is typing in an input field
+    if (event.target instanceof HTMLInputElement) return;
+    
+    const key = event.key.toLowerCase();
+    const filename = bookmarkLetterMap.get(key);
+    
+    if (filename) {
+      handleOpenBook(filename);
+    }
+  }
 
   onMount(async () => {
     try {
       bookmarks = await GetBookmarks();
+      updateBookmarkLetterMap();
       loading = false;
     } catch (err) {
       error = err.message || "Failed to load bookmarks";
       loading = false;
       console.error("Error loading bookmarks:", err);
     }
+
+    // Add keyboard event listener
+    window.addEventListener('keydown', handleKeyPress);
+    
+    // Cleanup function
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
   });
 
   async function handleOpenBook(filename: string) {
@@ -54,14 +98,18 @@
       <table class="books-table">
         <thead>
           <tr>
+            <th>Key</th>
             <th>Title</th>
             <th>Page</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {#each bookmarks as bookmark}
+          {#each bookmarks as bookmark, index}
             <tr>
+              <td class="key-cell">
+                <span class="book-key">{generateLetterForIndex(index)}</span>
+              </td>
               <td class="title-cell">
                 <span class="book-title">{bookmark.title || 'Untitled'}</span>
               </td>
@@ -187,6 +235,21 @@
 
   .books-table tr:hover {
     background-color: #f0f0f0;
+  }
+
+  .key-cell {
+    width: 60px;
+    text-align: center;
+  }
+
+  .book-key {
+    background: #6200ee;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.9rem;
   }
 
   .title-cell {
