@@ -23,7 +23,8 @@ type Book struct {
 }
 
 type Library struct {
-	DB *sql.DB
+	DB        *sql.DB
+	Extractor *zathura.BookmarkExtractor
 }
 
 func GetLibraryDatabasePath() (string, error) {
@@ -50,6 +51,12 @@ func NewLibrary(dbPath string) (*Library, error) {
 	library := &Library{DB: db}
 	if err := library.initSchema(); err != nil {
 		return nil, err
+	}
+
+	// Initialize the Zathura bookmark extractor
+	if err := library.initBookmarkExtractor(); err != nil {
+		fmt.Printf("Failed to initialize bookmark extractor: %v\n", err)
+		// Continue without extractor - it's not critical for library functionality
 	}
 
 	return library, nil
@@ -257,6 +264,25 @@ func (l *Library) CleanupMissingFiles() error {
 	return nil
 }
 
+func (l *Library) initBookmarkExtractor() error {
+	zathuraDbPath, err := zathura.GetDatabasePath()
+	if err != nil {
+		return fmt.Errorf("failed to get zathura database path: %w", err)
+	}
+
+	extractor, err := zathura.NewBookmarkExtractor(zathuraDbPath)
+	if err != nil {
+		return fmt.Errorf("failed to create bookmark extractor: %w", err)
+	}
+
+	l.Extractor = extractor
+	return nil
+}
+
 func (l *Library) Close() error {
+	// Close the bookmark extractor database connection if it exists
+	if l.Extractor != nil && l.Extractor.DB != nil {
+		l.Extractor.DB.Close()
+	}
 	return l.DB.Close()
 }

@@ -51,25 +51,13 @@ func NewApp() *App {
 		config: config,
 	}
 
-	// Initialize the Zathura bookmark extractor
-	zathuraDbPath, err := zathura.GetDatabasePath()
-	if err == nil {
-		extractor, err := zathura.NewBookmarkExtractor(zathuraDbPath)
-		if err == nil {
-			app.extractor = extractor
-		} else {
-			fmt.Printf("Failed to create bookmark extractor: %v\n", err)
-		}
-	} else {
-		fmt.Printf("Failed to get database path: %v\n", err)
-	}
-
 	// Initialize the library and scan books
 	libraryDbPath, err := library.GetLibraryDatabasePath()
 	if err == nil {
 		lib, err := library.NewLibrary(libraryDbPath)
 		if err == nil {
 			app.library = lib
+			app.extractor = lib.Extractor // Use the extractor from the library
 			
 			// Scan books directory with timing
 			fmt.Printf("Starting book library scan from: %s\n", config.General.BookScanPath)
@@ -105,12 +93,8 @@ func (a *App) startup(ctx context.Context) {
 
 // shutdown is called when the app is closing
 func (a *App) Shutdown(ctx context.Context) {
-	// Close the database connection if extractor exists
-	if a.extractor != nil && a.extractor.DB != nil {
-		a.extractor.DB.Close()
-	}
-	
 	// Close the library database connection if library exists
+	// This will also close the extractor connection
 	if a.library != nil {
 		a.library.Close()
 	}
