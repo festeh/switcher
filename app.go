@@ -50,10 +50,10 @@ func NewApp() *App {
 		config: config,
 	}
 
-	// Initialize the bookmark extractor
-	dbPath, err := books.GetDatabasePath()
+	// Initialize the Zathura bookmark extractor
+	zathuraDbPath, err := books.GetZathuraDatabasePath()
 	if err == nil {
-		extractor, err := books.NewBookmarkExtractor(dbPath)
+		extractor, err := books.NewBookmarkExtractor(zathuraDbPath)
 		if err == nil {
 			app.extractor = extractor
 		} else {

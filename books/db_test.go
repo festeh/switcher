@@ -7,7 +7,7 @@ import (
 
 func TestLoadDatabase(t *testing.T) {
 	// Get the database path
-	dbPath, err := GetDatabasePath()
+	dbPath, err := GetZathuraDatabasePath()
 	if err != nil {
 		t.Fatalf("Failed to get database path: %v", err)
 	}
@@ -31,7 +31,7 @@ func TestLoadDatabase(t *testing.T) {
 
 func TestExtractBookmarks(t *testing.T) {
 	// Get the database path
-	dbPath, err := GetDatabasePath()
+	dbPath, err := GetZathuraDatabasePath()
 	if err != nil {
 		t.Fatalf("Failed to get database path: %v", err)
 	}
