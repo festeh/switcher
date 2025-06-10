@@ -10,15 +10,16 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
-	"switcher/books"
+	"switcher/library"
+	"switcher/zathura"
 )
 
 // App struct
 type App struct {
 	ctx       context.Context
 	config    Config
-	extractor *books.BookmarkExtractor
-	library   *books.Library
+	extractor *zathura.BookmarkExtractor
+	library   *library.Library
 }
 
 //go:embed assets/letter-s.png
@@ -51,9 +52,9 @@ func NewApp() *App {
 	}
 
 	// Initialize the Zathura bookmark extractor
-	zathuraDbPath, err := books.GetZathuraDatabasePath()
+	zathuraDbPath, err := zathura.GetDatabasePath()
 	if err == nil {
-		extractor, err := books.NewBookmarkExtractor(zathuraDbPath)
+		extractor, err := zathura.NewBookmarkExtractor(zathuraDbPath)
 		if err == nil {
 			app.extractor = extractor
 		} else {
@@ -64,17 +65,17 @@ func NewApp() *App {
 	}
 
 	// Initialize the library and scan books
-	libraryDbPath, err := books.GetLibraryDatabasePath()
+	libraryDbPath, err := library.GetLibraryDatabasePath()
 	if err == nil {
-		library, err := books.NewLibrary(libraryDbPath)
+		lib, err := library.NewLibrary(libraryDbPath)
 		if err == nil {
-			app.library = library
+			app.library = lib
 			
 			// Scan books directory with timing
 			fmt.Printf("Starting book library scan from: %s\n", config.General.BookScanPath)
 			startTime := time.Now()
 			
-			err = library.ScanDirectory(config.General.BookScanPath)
+			err = lib.ScanDirectory(config.General.BookScanPath)
 			if err != nil {
 				fmt.Printf("Failed to scan books directory: %v\n", err)
 			} else {
@@ -103,7 +104,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // shutdown is called when the app is closing
-func (a *App) shutdown(ctx context.Context) {
+func (a *App) Shutdown(ctx context.Context) {
 	// Close the database connection if extractor exists
 	if a.extractor != nil && a.extractor.DB != nil {
 		a.extractor.DB.Close()
@@ -144,7 +145,7 @@ func (a *App) ExecCommand(cmd string) error {
 	return command.Start()
 }
 
-func (a *App) GetBooks() ([]books.Book, error) {
+func (a *App) GetBooks() ([]library.Book, error) {
 	if a.library == nil {
 		return nil, fmt.Errorf("library not initialized")
 	}

@@ -1,4 +1,4 @@
-export namespace books {
+export namespace library {
 	
 	export class Book {
 	    id: number;

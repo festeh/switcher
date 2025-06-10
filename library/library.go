@@ -1,4 +1,4 @@
-package books
+package library
 
 import (
 	"database/sql"
@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"switcher/util"
+	"switcher/zathura"
 )
 
 type Book struct {
@@ -23,8 +26,23 @@ type Library struct {
 	DB *sql.DB
 }
 
+func GetLibraryDatabasePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("error getting home directory: %w", err)
+	}
+	
+	// Create the directory if it doesn't exist
+	dbDir := filepath.Join(homeDir, ".local/share/booklib")
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		return "", fmt.Errorf("error creating database directory: %w", err)
+	}
+	
+	return filepath.Join(dbDir, "library.sqlite"), nil
+}
+
 func NewLibrary(dbPath string) (*Library, error) {
-	db, err := LoadDatabase(dbPath)
+	db, err := util.LoadDatabase(dbPath)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +153,7 @@ func (l *Library) addBook(filePath string, info os.FileInfo) error {
 
 func (l *Library) extractTitle(filePath string) string {
 	// Try to get title from metadata using exiftool
-	title := getFileTitle(filePath)
+	title := zathura.GetFileTitle(filePath)
 	
 	// If exiftool fails or returns empty, use filename without extension
 	if strings.TrimSpace(title) == "" {

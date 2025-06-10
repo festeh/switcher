@@ -1,4 +1,4 @@
-package books
+package zathura
 
 import (
 	"database/sql"
@@ -9,9 +9,11 @@ import (
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"switcher/util"
 )
 
-func GetZathuraDatabasePath() (string, error) {
+func GetDatabasePath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("error getting home directory: %w", err)
@@ -19,35 +21,12 @@ func GetZathuraDatabasePath() (string, error) {
 	return filepath.Join(homeDir, ".local/share/zathura/bookmarks.sqlite"), nil
 }
 
-func GetLibraryDatabasePath() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("error getting home directory: %w", err)
-	}
-	
-	// Create the directory if it doesn't exist
-	dbDir := filepath.Join(homeDir, ".local/share/booklib")
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
-		return "", fmt.Errorf("error creating database directory: %w", err)
-	}
-	
-	return filepath.Join(dbDir, "library.sqlite"), nil
-}
-
-func LoadDatabase(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
-	}
-	return db, nil
-}
-
 type BookmarkExtractor struct {
 	DB *sql.DB
 }
 
 func NewBookmarkExtractor(path string) (*BookmarkExtractor, error) {
-	db, err := LoadDatabase(path)
+	db, err := util.LoadDatabase(path)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +39,7 @@ type BookmarkInfo struct {
 	Title    string `json:"title"`
 }
 
-func getFileTitle(filePath string) string {
+func GetFileTitle(filePath string) string {
 	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
 	output, err := cmd.Output()
 	if err != nil {
@@ -92,7 +71,7 @@ func (be *BookmarkExtractor) ExtractBookmarks() ([]BookmarkInfo, error) {
 			continue
 		}
 
-		title := getFileTitle(filePath)
+		title := GetFileTitle(filePath)
 
 		bookmark := BookmarkInfo{
 			Filename: filePath,
