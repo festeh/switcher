@@ -24,7 +24,7 @@ type Book struct {
 
 type Library struct {
 	DB        *sql.DB
-	Extractor *zathura.BookmarkExtractor
+	Extractor *zathura.Zathura
 }
 
 func GetLibraryDatabasePath() (string, error) {
@@ -160,7 +160,7 @@ func (l *Library) addBook(filePath string, info os.FileInfo) error {
 
 func (l *Library) extractTitle(filePath string) string {
 	// Try to get title from metadata using exiftool
-	title := zathura.GetFileTitle(filePath)
+	title := zathura.GetTitle(filePath)
 	
 	// If exiftool fails or returns empty, use filename without extension
 	if strings.TrimSpace(title) == "" {
@@ -270,7 +270,7 @@ func (l *Library) initBookmarkExtractor() error {
 		return fmt.Errorf("failed to get zathura database path: %w", err)
 	}
 
-	extractor, err := zathura.NewBookmarkExtractor(zathuraDbPath)
+	extractor, err := zathura.NewZathura(zathuraDbPath)
 	if err != nil {
 		return fmt.Errorf("failed to create bookmark extractor: %w", err)
 	}

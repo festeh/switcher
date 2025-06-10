@@ -11,14 +11,12 @@ import (
 
 	"github.com/getlantern/systray"
 	"switcher/library"
-	"switcher/zathura"
 )
 
 // App struct
 type App struct {
 	ctx       context.Context
 	config    Config
-	extractor *zathura.BookmarkExtractor
 	library   *library.Library
 }
 
@@ -57,7 +55,6 @@ func NewApp() *App {
 		lib, err := library.NewLibrary(libraryDbPath)
 		if err == nil {
 			app.library = lib
-			app.extractor = lib.Extractor // Use the extractor from the library
 			
 			// Scan books directory with timing
 			fmt.Printf("Starting book library scan from: %s\n", config.General.BookScanPath)

@@ -21,25 +21,25 @@ func GetDatabasePath() (string, error) {
 	return filepath.Join(homeDir, ".local/share/zathura/bookmarks.sqlite"), nil
 }
 
-type BookmarkExtractor struct {
+type Zathura struct {
 	DB *sql.DB
 }
 
-func NewBookmarkExtractor(path string) (*BookmarkExtractor, error) {
+func NewZathura(path string) (*Zathura, error) {
 	db, err := util.LoadDatabase(path)
 	if err != nil {
 		return nil, err
 	}
-	return &BookmarkExtractor{DB: db}, nil
+	return &Zathura{DB: db}, nil
 }
 
-type BookmarkInfo struct {
+type BookInfo struct {
 	Filename string `json:"filename"`
 	Page     int    `json:"page"`
 	Title    string `json:"title"`
 }
 
-func GetFileTitle(filePath string) string {
+func GetTitle(filePath string) string {
 	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
 	output, err := cmd.Output()
 	if err != nil {
@@ -49,14 +49,14 @@ func GetFileTitle(filePath string) string {
 	return string(output)
 }
 
-func (be *BookmarkExtractor) ExtractBookmarks() ([]BookmarkInfo, error) {
+func (be *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
 	rows, err := be.DB.Query("SELECT file, page FROM fileinfo")
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %w", err)
 	}
 	defer rows.Close()
 
-	var bookmarks []BookmarkInfo
+	var bookmarks []BookInfo
 	for rows.Next() {
 		var filePath string
 		var page int
@@ -71,9 +71,9 @@ func (be *BookmarkExtractor) ExtractBookmarks() ([]BookmarkInfo, error) {
 			continue
 		}
 
-		title := GetFileTitle(filePath)
+		title := GetTitle(filePath)
 
-		bookmark := BookmarkInfo{
+		bookmark := BookInfo{
 			Filename: filePath,
 			Page:     page,
 			Title:    title,
