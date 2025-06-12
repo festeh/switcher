@@ -1,296 +1,296 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { GetBooks, OpenBook } from '../../lib/wailsjs/go/main/App';
+	import { onMount } from 'svelte';
+	import { GetBooks, OpenBook } from '../../lib/wailsjs/go/main/App';
 
-  let books = [];
-  let loading = true;
-  let error = null;
-  let bookLetterMap = new Map();
+	let books = [];
+	let loading = true;
+	let error = null;
+	let bookLetterMap = new Map();
 
-  const letterSequence = 'asdfgqwertzxcvb';
+	const letterSequence = 'asdfgqwertzxcvb';
 
-  function generateLetterForIndex(index: number): string {
-    if (index < letterSequence.length) {
-      return letterSequence[index];
-    }
-    
-    // For indices beyond the basic sequence, use combinations
-    const baseIndex = index - letterSequence.length;
-    const firstLetter = letterSequence[Math.floor(baseIndex / letterSequence.length)];
-    const secondLetter = letterSequence[baseIndex % letterSequence.length];
-    return firstLetter + secondLetter;
-  }
+	function generateLetterForIndex(index: number): string {
+		if (index < letterSequence.length) {
+			return letterSequence[index];
+		}
 
-  function updateBookLetterMap() {
-    bookLetterMap.clear();
-    books.forEach((book, index) => {
-      const letter = generateLetterForIndex(index);
-      bookLetterMap.set(letter, book.filepath);
-    });
-  }
+		// For indices beyond the basic sequence, use combinations
+		const baseIndex = index - letterSequence.length;
+		const firstLetter = letterSequence[Math.floor(baseIndex / letterSequence.length)];
+		const secondLetter = letterSequence[baseIndex % letterSequence.length];
+		return firstLetter + secondLetter;
+	}
 
-  function handleKeyPress(event: KeyboardEvent) {
-    // Ignore if user is typing in an input field
-    if (event.target instanceof HTMLInputElement) return;
-    
-    const key = event.key.toLowerCase();
-    const filepath = bookLetterMap.get(key);
-    
-    if (filepath) {
-      handleOpenBook(filepath);
-    }
-  }
+	function updateBookLetterMap() {
+		bookLetterMap.clear();
+		books.forEach((book, index) => {
+			const letter = generateLetterForIndex(index);
+			bookLetterMap.set(letter, book.filepath);
+		});
+	}
 
-  onMount(async () => {
-    try {
-      books = await GetBooks();
-      updateBookLetterMap();
-      loading = false;
-    } catch (err) {
-      error = err.message || "Failed to load books";
-      loading = false;
-      console.error("Error loading books:", err);
-    }
+	function handleKeyPress(event: KeyboardEvent) {
+		// Ignore if user is typing in an input field
+		if (event.target instanceof HTMLInputElement) return;
 
-    // Add keyboard event listener
-    window.addEventListener('keydown', handleKeyPress);
-    
-    // Cleanup function
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  });
+		const key = event.key.toLowerCase();
+		const filepath = bookLetterMap.get(key);
 
-  async function handleOpenBook(filepath: string) {
-    try {
-      await OpenBook(filepath);
-    } catch (err) {
-      // You might want to display this error to the user in a more friendly way
-      console.error("Error opening book:", err);
-      alert(`Error opening book: ${err.message || err}`);
-    }
-  }
+		if (filepath) {
+			handleOpenBook(filepath);
+		}
+	}
+
+	onMount(async () => {
+		try {
+			books = await GetBooks();
+			updateBookLetterMap();
+			loading = false;
+		} catch (err) {
+			error = err.message || 'Failed to load books';
+			loading = false;
+			console.error('Error loading books:', err);
+		}
+
+		// Add keyboard event listener
+		window.addEventListener('keydown', handleKeyPress);
+
+		// Cleanup function
+		return () => {
+			window.removeEventListener('keydown', handleKeyPress);
+		};
+	});
+
+	async function handleOpenBook(filepath: string) {
+		try {
+			await OpenBook(filepath);
+		} catch (err) {
+			// You might want to display this error to the user in a more friendly way
+			console.error('Error opening book:', err);
+			alert(`Error opening book: ${err.message || err}`);
+		}
+	}
 </script>
 
 <div class="container">
-  <header>
-    <h1>My Books</h1>
-    <div class="search-container">
-      <input type="text" placeholder="Search books..." class="search-input" />
-    </div>
-  </header>
+	<header>
+		<h1>My Books</h1>
+		<div class="search-container">
+			<input type="text" placeholder="Search books..." class="search-input" />
+		</div>
+	</header>
 
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Loading your books...</p>
-    </div>
-  {:else if error}
-    <div class="error">
-      <p>Error: {error}</p>
-    </div>
-  {:else if books.length === 0}
-    <div class="empty">
-      <p>No books found in your library.</p>
-    </div>
-  {:else}
-    <div class="books-container">
-      <table class="books-table">
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Title</th>
-            <th>Format</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each books as book, index}
-            <tr>
-              <td class="key-cell">
-                <span class="book-key">{generateLetterForIndex(index)}</span>
-              </td>
-              <td class="title-cell">
-                <span class="book-title">{book.title || 'Untitled'}</span>
-              </td>
-              <td>{book.format}</td>
-              <td>
-                <button class="action-btn open-btn" on:click={() => handleOpenBook(book.filepath)}>Open</button>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
+	{#if loading}
+		<div class="loading">
+			<div class="spinner"></div>
+			<p>Loading your books...</p>
+		</div>
+	{:else if error}
+		<div class="error">
+			<p>Error: {error}</p>
+		</div>
+	{:else if books.length === 0}
+		<div class="empty">
+			<p>No books found in your library.</p>
+		</div>
+	{:else}
+		<div class="books-container">
+			<table class="books-table">
+				<thead>
+					<tr>
+						<th>Key</th>
+						<th>Title</th>
+						<th>Format</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each books as book, index}
+						<tr on:click={() => handleOpenBook(book.filepath)}>
+							<td class="key-cell">
+								<span class="book-key">{generateLetterForIndex(index)}</span>
+							</td>
+							<td class="title-cell">
+								<span class="book-title">{book.title || 'Untitled'}</span>
+							</td>
+							<td>{book.format}</td>
+							<td> </td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	{/if}
 </div>
 
 <style>
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem;
-    font-family: 'Roboto', 'Segoe UI', sans-serif;
-  }
+	.container {
+		max-width: 1000px;
+		margin: 0 auto;
+		padding: 2rem;
+		font-family: 'Roboto', 'Segoe UI', sans-serif;
+	}
 
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
 
-  h1 {
-    color: #6200ee;
-    margin: 0;
-    font-weight: 500;
-    font-size: 2rem;
-  }
+	h1 {
+		color: #6200ee;
+		margin: 0;
+		font-weight: 500;
+		font-size: 2rem;
+	}
 
-  .search-container {
-    flex: 1;
-    max-width: 400px;
-  }
+	.search-container {
+		flex: 1;
+		max-width: 400px;
+	}
 
-  .search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
+	.search-input {
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		font-size: 1rem;
+		transition: all 0.2s;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	}
 
-  .search-input:focus {
-    outline: none;
-    border-color: #6200ee;
-    box-shadow: 0 2px 8px rgba(98, 0, 238, 0.2);
-  }
+	.search-input:focus {
+		outline: none;
+		border-color: #6200ee;
+		box-shadow: 0 2px 8px rgba(98, 0, 238, 0.2);
+	}
 
-  .loading, .error, .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    text-align: center;
-    gap: 1rem;
-  }
+	.loading,
+	.error,
+	.empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 3rem;
+		background: white;
+		border-radius: 8px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		text-align: center;
+		gap: 1rem;
+	}
 
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(98, 0, 238, 0.1);
-    border-radius: 50%;
-    border-top-color: #6200ee;
-    animation: spin 1s ease-in-out infinite;
-  }
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid rgba(98, 0, 238, 0.1);
+		border-radius: 50%;
+		border-top-color: #6200ee;
+		animation: spin 1s ease-in-out infinite;
+	}
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
 
-  .error {
-    color: #d32f2f;
-  }
+	.error {
+		color: #d32f2f;
+	}
 
+	.books-container {
+		background: white;
+		border-radius: 8px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+	}
 
-  .books-container {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
+	.books-table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+	}
 
-  .books-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-  }
+	.books-table th {
+		background-color: #f5f5f5;
+		padding: 1rem;
+		font-weight: 500;
+		color: #333;
+		border-bottom: 2px solid #e0e0e0;
+	}
 
-  .books-table th {
-    background-color: #f5f5f5;
-    padding: 1rem;
-    font-weight: 500;
-    color: #333;
-    border-bottom: 2px solid #e0e0e0;
-  }
+	.books-table td {
+		padding: 1rem;
+		border-bottom: 1px solid #e0e0e0;
+		vertical-align: middle;
+	}
 
-  .books-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e0e0e0;
-    vertical-align: middle;
-  }
+	.books-table tr:last-child td {
+		border-bottom: none;
+	}
 
-  .books-table tr:last-child td {
-    border-bottom: none;
-  }
+	.books-table tr:hover {
+		background-color: #f0f0f0;
+		cursor: pointer;
+	}
 
+	.key-cell {
+		width: 60px;
+		text-align: center;
+	}
 
-  .books-table tr:hover {
-    background-color: #f0f0f0;
-  }
+	.book-key {
+		background: #6200ee;
+		color: white;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		font-family: monospace;
+		font-weight: bold;
+		font-size: 0.9rem;
+	}
 
-  .key-cell {
-    width: 60px;
-    text-align: center;
-  }
+	.title-cell {
+		padding-left: 1.5rem;
+	}
 
-  .book-key {
-    background: #6200ee;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-family: monospace;
-    font-weight: bold;
-    font-size: 0.9rem;
-  }
+	.book-title {
+		font-weight: 500;
+		color: #333;
+		line-height: 1.4;
+	}
 
-  .title-cell {
-    padding-left: 1.5rem;
-  }
+	.action-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: transparent;
+		border: 1px solid #6200ee;
+		color: #6200ee;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: 500;
+		transition: all 0.2s;
+	}
 
-  .book-title {
-    font-weight: 500;
-    color: #333;
-    line-height: 1.4;
-  }
+	.action-btn:hover {
+		background: #6200ee;
+		color: white;
+	}
 
-  .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    border: 1px solid #6200ee;
-    color: #6200ee;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
+	@media (max-width: 768px) {
+		header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 
-  .action-btn:hover {
-    background: #6200ee;
-    color: white;
-  }
-
-
-  @media (max-width: 768px) {
-    header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .search-container {
-      width: 100%;
-      max-width: none;
-    }
-  }
+		.search-container {
+			width: 100%;
+			max-width: none;
+		}
+	}
 </style>
