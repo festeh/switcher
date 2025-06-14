@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"switcher/foliate"
 	"switcher/util"
 	"switcher/zathura"
 )
@@ -23,8 +24,9 @@ type Book struct {
 }
 
 type Library struct {
-	DB        *sql.DB
-	Extractor *zathura.Zathura
+	DB      *sql.DB
+	Zathura *zathura.Zathura
+	Foliate *foliate.Foliate
 }
 
 func GetLibraryDatabasePath() (string, error) {
@@ -32,13 +34,13 @@ func GetLibraryDatabasePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting home directory: %w", err)
 	}
-	
+
 	// Create the directory if it doesn't exist
 	dbDir := filepath.Join(homeDir, ".local/share/booklib")
 	if err := os.MkdirAll(dbDir, 0755); err != nil {
 		return "", fmt.Errorf("error creating database directory: %w", err)
 	}
-	
+
 	return filepath.Join(dbDir, "library.sqlite"), nil
 }
 
@@ -53,11 +55,18 @@ func NewLibrary(dbPath string) (*Library, error) {
 		return nil, err
 	}
 
-	// Initialize the Zathura bookmark extractor
-	if err := library.initZathura(); err != nil {
-		fmt.Printf("Failed to initialize bookmark extractor: %v\n", err)
-		// Continue without extractor - it's not critical for library functionality
+	zat, err := zathura.NewZathura()
+	if err != nil {
+		return nil, err
 	}
+
+	foli, err := foliate.NewFoliate()
+	if err != nil {
+		return nil, err
+	}
+
+	library.Zathura = zat
+	library.Foliate = foli
 
 	return library, nil
 }
@@ -69,7 +78,6 @@ func (l *Library) initSchema() error {
 		filepath TEXT UNIQUE NOT NULL,
 		title TEXT NOT NULL,
 		filesize INTEGER NOT NULL,
-		modtime DATETIME NOT NULL,
 		format TEXT NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
@@ -103,19 +111,15 @@ func (l *Library) ScanDirectory(rootDir string) error {
 
 		log.Printf("Found book: %s\n", path)
 
-		// Check if book already exists in database
 		exists, err := l.bookExists(path)
 		if err != nil {
 			return err
 		}
 
-		if exists {
-			// Update existing book if file was modified
-			return l.updateBookIfModified(path, info)
+		if !exists {
+			return l.addBook(path, info)
 		}
-
-		// Add new book
-		return l.addBook(path, info)
+		return nil
 	})
 }
 
@@ -161,12 +165,12 @@ func (l *Library) addBook(filePath string, info os.FileInfo) error {
 func (l *Library) extractTitle(filePath string) string {
 	// Try to get title from metadata using exiftool
 	title := zathura.GetTitle(filePath)
-	
+
 	// If exiftool fails or returns empty, use filename without extension
 	if strings.TrimSpace(title) == "" {
 		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 	}
-	
+
 	return strings.TrimSpace(title)
 }
 
@@ -264,25 +268,10 @@ func (l *Library) CleanupMissingFiles() error {
 	return nil
 }
 
-func (l *Library) initZathura() error {
-	zathuraDbPath, err := zathura.GetDatabasePath()
-	if err != nil {
-		return fmt.Errorf("failed to get zathura database path: %w", err)
-	}
-
-	extractor, err := zathura.NewZathura(zathuraDbPath)
-	if err != nil {
-		return fmt.Errorf("failed to create bookmark extractor: %w", err)
-	}
-
-	l.Extractor = extractor
-	return nil
-}
-
 func (l *Library) Close() error {
 	// Close the bookmark extractor database connection if it exists
-	if l.Extractor != nil && l.Extractor.DB != nil {
-		l.Extractor.DB.Close()
+	if l.Zathura != nil && l.Zathura.DB != nil {
+		l.Zathura.DB.Close()
 	}
 	return l.DB.Close()
 }

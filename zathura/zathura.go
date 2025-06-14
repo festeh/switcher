@@ -25,7 +25,11 @@ type Zathura struct {
 	DB *sql.DB
 }
 
-func NewZathura(path string) (*Zathura, error) {
+func NewZathura() (*Zathura, error) {
+	path, err := GetDatabasePath()
+	if err != nil {
+		return nil, err
+	}
 	db, err := util.LoadDatabase(path)
 	if err != nil {
 		return nil, err
@@ -49,8 +53,8 @@ func GetTitle(filePath string) string {
 	return string(output)
 }
 
-func (be *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
-	rows, err := be.DB.Query("SELECT file, page FROM fileinfo")
+func (zat *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
+	rows, err := zat.DB.Query("SELECT file, page FROM fileinfo")
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %w", err)
 	}
