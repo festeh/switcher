@@ -17,6 +17,7 @@ type Book struct {
 	FilePath string `json:"filepath"`
 	Title    string `json:"title"`
 	Format   string `json:"format"`
+	Page     int    `json:"page,omitempty"`
 }
 
 type Library struct {
