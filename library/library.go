@@ -5,22 +5,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
-
 	"switcher/foliate"
 	"switcher/util"
 	"switcher/zathura"
 )
 
 type Book struct {
-	ID       int64     `json:"id"`
-	FilePath string    `json:"filepath"`
-	Title    string    `json:"title"`
-	FileSize int64     `json:"filesize"`
-	ModTime  time.Time `json:"modtime"`
-	Format   string    `json:"format"`
+	FilePath string `json:"filepath"`
+	Title    string `json:"title"`
+	Format   string `json:"format"`
 }
 
 type Library struct {
@@ -74,28 +70,14 @@ func NewLibrary(dbPath string) (*Library, error) {
 func (l *Library) initSchema() error {
 	query := `
 	CREATE TABLE IF NOT EXISTS books (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		filepath TEXT UNIQUE NOT NULL,
 		title TEXT NOT NULL,
-		filesize INTEGER NOT NULL,
 		format TEXT NOT NULL,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 	CREATE INDEX IF NOT EXISTS idx_books_filepath ON books(filepath);
-	CREATE INDEX IF NOT EXISTS idx_books_format ON books(format);
 	`
 	_, err := l.DB.Exec(query)
 	return err
-}
-
-func GetTitle(filePath string) string {
-	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
-	output, err := cmd.Output()
-	if err != nil {
-		log.Printf("Error executing exiftool on %s: %v", filePath, err)
-		return filepath.Base(filePath) // Return filename as fallback
-	}
-	return string(output)
 }
 
 func (l *Library) ScanDirectory(rootDir string) error {
@@ -127,7 +109,7 @@ func (l *Library) ScanDirectory(rootDir string) error {
 		}
 
 		if !exists {
-			return l.addBook(path, info)
+			return l.addBook(path)
 		}
 		return nil
 	})
@@ -139,42 +121,25 @@ func (l *Library) bookExists(filePath string) (bool, error) {
 	return count > 0, err
 }
 
-func (l *Library) updateBookIfModified(filePath string, info os.FileInfo) error {
-	var dbModTime time.Time
-	err := l.DB.QueryRow("SELECT modtime FROM books WHERE filepath = ?", filePath).Scan(&dbModTime)
-	if err != nil {
-		return err
-	}
-
-	if info.ModTime().After(dbModTime) {
-		title := l.extractTitle(filePath)
-		format := strings.TrimPrefix(strings.ToLower(filepath.Ext(filePath)), ".")
-
-		_, err = l.DB.Exec(`
-			UPDATE books 
-			SET title = ?, filesize = ?, modtime = ?, format = ?
-			WHERE filepath = ?`,
-			title, info.Size(), info.ModTime(), format, filePath)
-		return err
-	}
-
-	return nil
-}
-
-func (l *Library) addBook(filePath string, info os.FileInfo) error {
+func (l *Library) addBook(filePath string) error {
 	title := l.extractTitle(filePath)
 	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(filePath)), ".")
 
 	_, err := l.DB.Exec(`
-		INSERT INTO books (filepath, title, filesize, modtime, format)
-		VALUES (?, ?, ?, ?, ?)`,
-		filePath, title, info.Size(), info.ModTime(), format)
+		INSERT INTO books (filepath, title, format)
+		VALUES (?, ?, ?)`,
+		filePath, title, format)
 	return err
 }
 
 func (l *Library) extractTitle(filePath string) string {
-	// Try to get title from metadata using exiftool
-	title := zathura.GetTitle(filePath)
+	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Printf("Error executing exiftool on %s: %v", filePath, err)
+		return filepath.Base(filePath) // Return filename as fallback
+	}
+	title := string(out)
 
 	// If exiftool fails or returns empty, use filename without extension
 	if strings.TrimSpace(title) == "" {
@@ -186,7 +151,7 @@ func (l *Library) extractTitle(filePath string) string {
 
 func (l *Library) GetAllBooks() ([]Book, error) {
 	rows, err := l.DB.Query(`
-		SELECT id, filepath, title, filesize, modtime, format
+		SELECT id, filepath, title, format
 		FROM books
 		ORDER BY title ASC`)
 	if err != nil {
@@ -197,7 +162,7 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 	var books []Book
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(&book.ID, &book.FilePath, &book.Title, &book.FileSize, &book.ModTime, &book.Format)
+		err := rows.Scan(&book.FilePath, &book.Title, &book.Format)
 		if err != nil {
 			return nil, err
 		}
@@ -209,7 +174,7 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 
 func (l *Library) GetBooksByFormat(format string) ([]Book, error) {
 	rows, err := l.DB.Query(`
-		SELECT id, filepath, title, filesize, modtime, format
+		SELECT filepath, title,  format
 		FROM books
 		WHERE format = ?
 		ORDER BY title ASC`, format)
@@ -221,32 +186,7 @@ func (l *Library) GetBooksByFormat(format string) ([]Book, error) {
 	var books []Book
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(&book.ID, &book.FilePath, &book.Title, &book.FileSize, &book.ModTime, &book.Format)
-		if err != nil {
-			return nil, err
-		}
-		books = append(books, book)
-	}
-
-	return books, rows.Err()
-}
-
-func (l *Library) SearchBooks(query string) ([]Book, error) {
-	searchQuery := "%" + strings.ToLower(query) + "%"
-	rows, err := l.DB.Query(`
-		SELECT id, filepath, title, filesize, modtime, format
-		FROM books
-		WHERE LOWER(title) LIKE ? OR LOWER(filepath) LIKE ?
-		ORDER BY title ASC`, searchQuery, searchQuery)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var books []Book
-	for rows.Next() {
-		var book Book
-		err := rows.Scan(&book.ID, &book.FilePath, &book.Title, &book.FileSize, &book.ModTime, &book.Format)
+		err := rows.Scan(&book.FilePath, &book.Title, &book.Format)
 		if err != nil {
 			return nil, err
 		}
