@@ -54,7 +54,7 @@ func NewLibrary(dbPath string) (*Library, error) {
 	}
 
 	// Initialize the Zathura bookmark extractor
-	if err := library.initBookmarkExtractor(); err != nil {
+	if err := library.initZathura(); err != nil {
 		fmt.Printf("Failed to initialize bookmark extractor: %v\n", err)
 		// Continue without extractor - it's not critical for library functionality
 	}
@@ -264,7 +264,7 @@ func (l *Library) CleanupMissingFiles() error {
 	return nil
 }
 
-func (l *Library) initBookmarkExtractor() error {
+func (l *Library) initZathura() error {
 	zathuraDbPath, err := zathura.GetDatabasePath()
 	if err != nil {
 		return fmt.Errorf("failed to get zathura database path: %w", err)
