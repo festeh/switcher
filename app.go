@@ -146,6 +146,7 @@ func (a *App) Hide() error {
 }
 
 func (a *App) OpenBook(filePath string) error {
+	a.Hide()
 	if strings.HasSuffix(strings.ToLower(filePath), ".pdf") {
 		cmd := exec.Command("zathura", filePath)
 		err := cmd.Start()
