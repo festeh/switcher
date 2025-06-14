@@ -73,7 +73,7 @@ func (l *Library) initSchema() error {
 	CREATE TABLE IF NOT EXISTS books (
 		filepath TEXT UNIQUE NOT NULL,
 		title TEXT NOT NULL,
-		format TEXT NOT NULL,
+		format TEXT NOT NULL
 	);
 	CREATE INDEX IF NOT EXISTS idx_books_filepath ON books(filepath);
 	`
