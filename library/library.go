@@ -1,6 +1,7 @@
 package library
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"log"
@@ -141,6 +142,28 @@ func (l *Library) extractTitle(filePath string) string {
 		return filepath.Base(filePath) // Return filename as fallback
 	}
 	title := string(out)
+
+	if strings.TrimSpace(title) == "" {
+		cmd := exec.Command("exiftool", filePath)
+		fullOut, err := cmd.Output()
+		if err != nil {
+			log.Printf("Error executing exiftool for full output on %s: %v", filePath, err)
+			// Fallback to filename without extension
+			title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+		} else {
+			scanner := bufio.NewScanner(strings.NewReader(string(fullOut)))
+			for scanner.Scan() {
+				line := scanner.Text()
+				if strings.Contains(line, "Book-title:") {
+					parts := strings.SplitN(line, ":", 2)
+					if len(parts) > 1 {
+						title = parts[1]
+						break // Found it, no need to scan further
+					}
+				}
+			}
+		}
+	}
 
 	// If exiftool fails or returns empty, use filename without extension
 	if strings.TrimSpace(title) == "" {
