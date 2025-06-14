@@ -6,8 +6,8 @@ export function ExecCommand(arg1) {
   return window['go']['main']['App']['ExecCommand'](arg1);
 }
 
-export function GetBooks() {
-  return window['go']['main']['App']['GetBooks']();
+export function GetBooks(arg1) {
+  return window['go']['main']['App']['GetBooks'](arg1);
 }
 
 export function GetCommandList() {

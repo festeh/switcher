@@ -6,7 +6,7 @@ import {context} from '../models';
 
 export function ExecCommand(arg1:string):Promise<void>;
 
-export function GetBooks():Promise<Array<library.Book>>;
+export function GetBooks(arg1:string):Promise<Array<library.Book>>;
 
 export function GetCommandList():Promise<Array<main.Command>>;
 
