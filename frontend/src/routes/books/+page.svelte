@@ -98,6 +98,7 @@
 					<tr>
 						<th>Key</th>
 						<th>Title</th>
+						<th>Page</th>
 						<th>Format</th>
 						<th>Actions</th>
 					</tr>
@@ -111,6 +112,7 @@
 							<td class="title-cell">
 								<span class="book-title">{book.title || 'Untitled'}</span>
 							</td>
+							<td>{book.page || ''}</td>
 							<td>{book.format}</td>
 							<td> </td>
 						</tr>
