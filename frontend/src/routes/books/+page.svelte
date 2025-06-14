@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { GetBooks, OpenBook } from '../../lib/wailsjs/go/main/App';
 
 	let books = [];
@@ -74,7 +75,12 @@
 
 <div class="container">
 	<header>
-		<h1>My Books</h1>
+		<div class="header-left">
+			<button class="back-btn" on:click={() => goto('/')}>
+				← Back
+			</button>
+			<h1>My Books</h1>
+		</div>
 		<div class="search-container">
 			<input type="text" placeholder="Search books..." class="search-input" />
 		</div>
@@ -138,6 +144,29 @@
 		margin-bottom: 2rem;
 		flex-wrap: wrap;
 		gap: 1rem;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.back-btn {
+		background: transparent;
+		border: 1px solid #6200ee;
+		color: #6200ee;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: 500;
+		transition: all 0.2s;
+		font-size: 0.9rem;
+	}
+
+	.back-btn:hover {
+		background: #6200ee;
+		color: white;
 	}
 
 	h1 {
@@ -286,6 +315,10 @@
 		header {
 			flex-direction: column;
 			align-items: flex-start;
+		}
+
+		.header-left {
+			width: 100%;
 		}
 
 		.search-container {
