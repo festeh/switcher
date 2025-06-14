@@ -8,10 +8,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"switcher/foliate"
 	"switcher/util"
 	"switcher/zathura"
+
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 type Book struct {
@@ -171,6 +174,32 @@ func (l *Library) extractTitle(filePath string) string {
 	}
 
 	return strings.TrimSpace(title)
+}
+
+func (l *Library) SearchBooks(term string) ([]Book, error) {
+	allBooks, err := l.GetAllBooks()
+	if err != nil {
+		return nil, err
+	}
+
+	if strings.TrimSpace(term) == "" {
+		return allBooks, nil
+	}
+
+	var titles []string
+	for _, book := range allBooks {
+		titles = append(titles, book.Title)
+	}
+
+	ranks := fuzzy.RankFindFold(term, titles)
+	sort.Sort(ranks)
+
+	var foundBooks []Book
+	for _, rank := range ranks {
+		foundBooks = append(foundBooks, allBooks[rank.OriginalIndex])
+	}
+
+	return foundBooks, nil
 }
 
 func (l *Library) GetAllBooks() ([]Book, error) {

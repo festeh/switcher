@@ -7,6 +7,8 @@
 	let loading = true;
 	let error = null;
 	let bookLetterMap = new Map();
+	let searchTerm = '';
+	let searchTimeout;
 
 	const letterSequence = 'asdfgqwertzxcvb';
 
@@ -47,9 +49,27 @@
 		}
 	}
 
+	function onSearchInput() {
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			searchBooks();
+		}, 200); // Debounce search input
+	}
+
+	async function searchBooks() {
+		try {
+			// Avoid showing loader on every keystroke for a smoother experience
+			books = await GetBooks(searchTerm);
+			updateBookLetterMap();
+		} catch (err) {
+			error = err.message || 'Failed to search books';
+			console.error('Error searching books:', err);
+		}
+	}
+
 	onMount(async () => {
 		try {
-			books = await GetBooks();
+			books = await GetBooks('');
 			updateBookLetterMap();
 			loading = false;
 		} catch (err) {
@@ -79,7 +99,13 @@
 			<h1>My Books</h1>
 		</div>
 		<div class="search-container">
-			<input type="text" placeholder="Search books..." class="search-input" />
+			<input
+				type="text"
+				placeholder="Search books..."
+				class="search-input"
+				bind:value={searchTerm}
+				on:input={onSearchInput}
+			/>
 		</div>
 	</header>
 

@@ -126,14 +126,14 @@ func (a *App) ExecCommand(cmd string) error {
 	return command.Start()
 }
 
-func (a *App) GetBooks() ([]library.Book, error) {
+func (a *App) GetBooks(searchTerm string) ([]library.Book, error) {
 	if a.library == nil {
 		return nil, fmt.Errorf("library not initialized")
 	}
 
-	books, err := a.library.GetAllBooks()
+	books, err := a.library.SearchBooks(searchTerm)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get books: %w", err)
+		return nil, fmt.Errorf("failed to search books: %w", err)
 	}
 
 	return books, nil
