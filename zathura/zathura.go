@@ -41,14 +41,14 @@ type BookInfo struct {
 	Page     int    `json:"page"`
 }
 
-func (zat *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
+func (zat *Zathura) GetAllKnownBooks() (map[string]BookInfo, error) {
 	rows, err := zat.DB.Query("SELECT file, page FROM fileinfo")
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %w", err)
 	}
 	defer rows.Close()
 
-	var bookmarks []BookInfo
+	bookmarks := make(map[string]BookInfo)
 	for rows.Next() {
 		var filePath string
 		var page int
@@ -68,7 +68,7 @@ func (zat *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
 			Page:     page,
 		}
 
-		bookmarks = append(bookmarks, bookmark)
+		bookmarks[filePath] = bookmark
 	}
 
 	if err = rows.Err(); err != nil {

@@ -151,24 +151,14 @@ func (l *Library) extractTitle(filePath string) string {
 }
 
 func (l *Library) GetAllBooks() ([]Book, error) {
-	zathuraMap := make(map[string]zathura.BookInfo)
-	zathuraBooks, err := l.Zathura.GetAllKnownBooks()
+	zathuraMap, err := l.Zathura.GetAllKnownBooks()
 	if err != nil {
 		log.Printf("could not get zathura books, continuing without them: %v", err)
-	} else {
-		for _, b := range zathuraBooks {
-			zathuraMap[b.Filename] = b
-		}
 	}
 
-	foliateMap := make(map[string]foliate.BookInfo)
-	foliateBooks, err := l.Foliate.GetAllKnownBooks()
+	foliateMap, err := l.Foliate.GetAllKnownBooks()
 	if err != nil {
 		log.Printf("could not get foliate books, continuing without them: %v", err)
-	} else {
-		for _, b := range foliateBooks {
-			foliateMap[b.Filename] = b
-		}
 	}
 
 	rows, err := l.DB.Query(`

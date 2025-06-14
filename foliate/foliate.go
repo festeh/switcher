@@ -61,7 +61,7 @@ type URIStore struct {
 	URIs [][]string `json:"uris"`
 }
 
-func (f *Foliate) GetAllKnownBooks() ([]BookInfo, error) {
+func (f *Foliate) GetAllKnownBooks() (map[string]BookInfo, error) {
 	uriStorePath := filepath.Join(f.DataPath, "library", "uri-store.json")
 
 	uriData, err := os.ReadFile(uriStorePath)
@@ -74,7 +74,7 @@ func (f *Foliate) GetAllKnownBooks() ([]BookInfo, error) {
 		return nil, fmt.Errorf("error parsing uri-store.json: %w", err)
 	}
 
-	var books []BookInfo
+	books := make(map[string]BookInfo)
 	for _, uri := range uriStore.URIs {
 		if len(uri) != 2 {
 			continue
@@ -126,7 +126,7 @@ func (f *Foliate) GetAllKnownBooks() ([]BookInfo, error) {
 			Title:    title,
 		}
 
-		books = append(books, book)
+		books[filePath] = book
 	}
 
 	return books, nil
