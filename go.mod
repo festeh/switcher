@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/getlantern/systray v1.2.2
+	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/wailsapp/wails/v2 v2.10.1
 )
