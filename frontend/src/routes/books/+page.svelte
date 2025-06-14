@@ -76,9 +76,7 @@
 <div class="container">
 	<header>
 		<div class="header-left">
-			<button class="back-btn" on:click={() => goto('/')}>
-				← Back
-			</button>
+			<button class="back-btn" on:click={() => goto('/')}> ← Back </button>
 			<h1>My Books</h1>
 		</div>
 		<div class="search-container">
