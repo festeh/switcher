@@ -52,14 +52,6 @@
 			loading = false;
 			console.error('Error loading books:', err);
 		}
-
-		// Add keyboard event listener
-		window.addEventListener('keydown', handleKeyPress);
-
-		// Cleanup function
-		return () => {
-			window.removeEventListener('keydown', handleKeyPress);
-		};
 	});
 
 	async function handleOpenBook(filepath: string) {
@@ -72,6 +64,8 @@
 		}
 	}
 </script>
+
+<svelte:window on:keydown={handleKeyPress} />
 
 <div class="container">
 	<header>
