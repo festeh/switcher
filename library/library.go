@@ -88,6 +88,16 @@ func (l *Library) initSchema() error {
 	return err
 }
 
+func GetTitle(filePath string) string {
+	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("Error executing exiftool on %s: %v", filePath, err)
+		return filepath.Base(filePath) // Return filename as fallback
+	}
+	return string(output)
+}
+
 func (l *Library) ScanDirectory(rootDir string) error {
 	supportedFormats := map[string]bool{
 		".pdf":  true,

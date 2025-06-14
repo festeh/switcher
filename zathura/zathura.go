@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -40,17 +39,6 @@ func NewZathura() (*Zathura, error) {
 type BookInfo struct {
 	Filename string `json:"filename"`
 	Page     int    `json:"page"`
-	Title    string `json:"title"`
-}
-
-func GetTitle(filePath string) string {
-	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Title", filePath)
-	output, err := cmd.Output()
-	if err != nil {
-		log.Printf("Error executing exiftool on %s: %v", filePath, err)
-		return filepath.Base(filePath) // Return filename as fallback
-	}
-	return string(output)
 }
 
 func (zat *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
@@ -75,12 +63,9 @@ func (zat *Zathura) GetAllKnownBooks() ([]BookInfo, error) {
 			continue
 		}
 
-		title := GetTitle(filePath)
-
 		bookmark := BookInfo{
 			Filename: filePath,
 			Page:     page,
-			Title:    title,
 		}
 
 		bookmarks = append(bookmarks, bookmark)
