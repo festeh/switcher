@@ -34,6 +34,11 @@
 		// Ignore if user is typing in an input field
 		if (event.target instanceof HTMLInputElement) return;
 
+		// Ignore if any modifier keys are pressed
+		if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) {
+			return;
+		}
+
 		const key = event.key.toLowerCase();
 		const filepath = bookLetterMap.get(key);
 
