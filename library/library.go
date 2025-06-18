@@ -85,6 +85,15 @@ func (l *Library) initSchema() error {
 	return err
 }
 
+func (l *Library) ResetDatabase() error {
+	query := `DROP TABLE IF EXISTS books;`
+	_, err := l.DB.Exec(query)
+	if err != nil {
+		return err
+	}
+	return l.initSchema()
+}
+
 func (l *Library) ScanDirectory(rootDir string) error {
 	supportedFormats := map[string]bool{
 		".pdf":  true,

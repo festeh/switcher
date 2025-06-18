@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { GetBooks, OpenBook } from '../../lib/wailsjs/go/main/App';
+	import { GetBooks, OpenBook, RecreateLibrary } from '../../lib/wailsjs/go/main/App';
 
 	let books = [];
 	let loading = true;
@@ -56,6 +56,28 @@
 		}, 200); // Debounce search input
 	}
 
+	async function handleRecreateLibrary() {
+		if (
+			!confirm('Are you sure you want to rescan the library from scratch? This may take some time.')
+		) {
+			return;
+		}
+
+		loading = true;
+		error = null;
+		try {
+			await RecreateLibrary();
+			searchTerm = '';
+			books = await GetBooks('');
+			updateBookLetterMap();
+		} catch (err) {
+			error = err.message || 'Failed to rescan library';
+			console.error('Error rescanning library:', err);
+		} finally {
+			loading = false;
+		}
+	}
+
 	async function searchBooks() {
 		try {
 			// Avoid showing loader on every keystroke for a smoother experience
@@ -97,6 +119,7 @@
 		<div class="header-left">
 			<button class="back-btn" on:click={() => goto('/')}> ← Back </button>
 			<h1>My Books</h1>
+			<button class="action-btn" on:click={handleRecreateLibrary}> Rescan Library </button>
 		</div>
 		<div class="search-container">
 			<input

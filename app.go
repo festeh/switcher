@@ -126,6 +126,31 @@ func (a *App) ExecCommand(cmd string) error {
 	return command.Start()
 }
 
+// RecreateLibrary drops and rescans the book library
+func (a *App) RecreateLibrary() error {
+	if a.library == nil {
+		return fmt.Errorf("library not initialized")
+	}
+
+	if err := a.library.ResetDatabase(); err != nil {
+		return fmt.Errorf("failed to reset database: %w", err)
+	}
+
+	// Scan books directory with timing
+	fmt.Printf("Starting book library scan from: %s\n", a.config.General.BookScanPath)
+	startTime := time.Now()
+
+	err := a.library.ScanDirectory(a.config.General.BookScanPath)
+	if err != nil {
+		fmt.Printf("Failed to scan books directory: %v\n", err)
+		return fmt.Errorf("failed to scan directory: %w", err)
+	}
+
+	elapsed := time.Since(startTime)
+	fmt.Printf("Book library scan completed in: %v\n", elapsed)
+	return nil
+}
+
 func (a *App) GetBooks(searchTerm string) ([]library.Book, error) {
 	if a.library == nil {
 		return nil, fmt.Errorf("library not initialized")
