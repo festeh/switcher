@@ -26,6 +26,10 @@ export function OpenBook(arg1) {
   return window['go']['main']['App']['OpenBook'](arg1);
 }
 
+export function RecreateLibrary() {
+  return window['go']['main']['App']['RecreateLibrary']();
+}
+
 export function Shutdown(arg1) {
   return window['go']['main']['App']['Shutdown'](arg1);
 }

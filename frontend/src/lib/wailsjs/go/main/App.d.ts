@@ -16,4 +16,6 @@ export function Hide():Promise<void>;
 
 export function OpenBook(arg1:string):Promise<void>;
 
+export function RecreateLibrary():Promise<void>;
+
 export function Shutdown(arg1:context.Context):Promise<void>;
