@@ -101,12 +101,60 @@ func (l *Library) ScanDirectory(rootDir string) error {
 		".fb2":  true,
 	}
 
+	ignoreCache := make(map[string]map[string]struct{})
+
+	getIgnoredDirs := func(parentDir string) (map[string]struct{}, error) {
+		if ignored, ok := ignoreCache[parentDir]; ok {
+			return ignored, nil
+		}
+
+		ignoredDirs := make(map[string]struct{})
+		ignoreFilePath := filepath.Join(parentDir, ".ignore")
+
+		file, err := os.Open(ignoreFilePath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				ignoreCache[parentDir] = ignoredDirs
+				return ignoredDirs, nil
+			}
+			return nil, err
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if line != "" {
+				ignoredDirs[line] = struct{}{}
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			return nil, err
+		}
+
+		ignoreCache[parentDir] = ignoredDirs
+		return ignoredDirs, nil
+	}
+
 	return filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if info.IsDir() {
+			if path != rootDir {
+				parentDir := filepath.Dir(path)
+				dirName := info.Name()
+				ignored, err := getIgnoredDirs(parentDir)
+				if err != nil {
+					return err
+				}
+				if _, ok := ignored[dirName]; ok {
+					log.Printf("Ignoring directory: %s\n", path)
+					return filepath.SkipDir
+				}
+			}
 			return nil
 		}
 
