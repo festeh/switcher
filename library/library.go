@@ -94,6 +94,40 @@ func (l *Library) ResetDatabase() error {
 	return l.initSchema()
 }
 
+func getIgnoredDirs(parentDir string, ignoreCache map[string]map[string]struct{}) (map[string]struct{}, error) {
+	if ignored, ok := ignoreCache[parentDir]; ok {
+		return ignored, nil
+	}
+
+	ignoredDirs := make(map[string]struct{})
+	ignoreFilePath := filepath.Join(parentDir, ".ignore")
+
+	file, err := os.Open(ignoreFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			ignoreCache[parentDir] = ignoredDirs
+			return ignoredDirs, nil
+		}
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line != "" {
+			ignoredDirs[line] = struct{}{}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	ignoreCache[parentDir] = ignoredDirs
+	return ignoredDirs, nil
+}
+
 func (l *Library) ScanDirectory(rootDir string) error {
 	supportedFormats := map[string]bool{
 		".pdf":  true,
@@ -102,40 +136,6 @@ func (l *Library) ScanDirectory(rootDir string) error {
 	}
 
 	ignoreCache := make(map[string]map[string]struct{})
-
-	getIgnoredDirs := func(parentDir string) (map[string]struct{}, error) {
-		if ignored, ok := ignoreCache[parentDir]; ok {
-			return ignored, nil
-		}
-
-		ignoredDirs := make(map[string]struct{})
-		ignoreFilePath := filepath.Join(parentDir, ".ignore")
-
-		file, err := os.Open(ignoreFilePath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				ignoreCache[parentDir] = ignoredDirs
-				return ignoredDirs, nil
-			}
-			return nil, err
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			line := strings.TrimSpace(scanner.Text())
-			if line != "" {
-				ignoredDirs[line] = struct{}{}
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			return nil, err
-		}
-
-		ignoreCache[parentDir] = ignoredDirs
-		return ignoredDirs, nil
-	}
 
 	return filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -146,7 +146,7 @@ func (l *Library) ScanDirectory(rootDir string) error {
 			if path != rootDir {
 				parentDir := filepath.Dir(path)
 				dirName := info.Name()
-				ignored, err := getIgnoredDirs(parentDir)
+				ignored, err := getIgnoredDirs(parentDir, ignoreCache)
 				if err != nil {
 					return err
 				}
