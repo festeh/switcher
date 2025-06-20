@@ -94,18 +94,13 @@ func (l *Library) ResetDatabase() error {
 	return l.initSchema()
 }
 
-func getIgnoredDirs(parentDir string, ignoreCache map[string]map[string]struct{}) (map[string]struct{}, error) {
-	if ignored, ok := ignoreCache[parentDir]; ok {
-		return ignored, nil
-	}
-
+func getIgnoredDirs(rootDir string) (map[string]struct{}, error) {
 	ignoredDirs := make(map[string]struct{})
-	ignoreFilePath := filepath.Join(parentDir, ".ignore")
+	ignoreFilePath := filepath.Join(rootDir, ".ignore")
 
 	file, err := os.Open(ignoreFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			ignoreCache[parentDir] = ignoredDirs
 			return ignoredDirs, nil
 		}
 		return nil, err
@@ -124,7 +119,6 @@ func getIgnoredDirs(parentDir string, ignoreCache map[string]map[string]struct{}
 		return nil, err
 	}
 
-	ignoreCache[parentDir] = ignoredDirs
 	return ignoredDirs, nil
 }
 
@@ -135,7 +129,10 @@ func (l *Library) ScanDirectory(rootDir string) error {
 		".fb2":  true,
 	}
 
-	ignoreCache := make(map[string]map[string]struct{})
+	ignoredDirs, err := getIgnoredDirs(rootDir)
+	if err != nil {
+		return fmt.Errorf("error reading .ignore file: %w", err)
+	}
 
 	return filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -143,14 +140,9 @@ func (l *Library) ScanDirectory(rootDir string) error {
 		}
 
 		if info.IsDir() {
-			if path != rootDir {
-				parentDir := filepath.Dir(path)
+			if filepath.Dir(path) == rootDir {
 				dirName := info.Name()
-				ignored, err := getIgnoredDirs(parentDir, ignoreCache)
-				if err != nil {
-					return err
-				}
-				if _, ok := ignored[dirName]; ok {
+				if _, ok := ignoredDirs[dirName]; ok {
 					log.Printf("Ignoring directory: %s\n", path)
 					return filepath.SkipDir
 				}
