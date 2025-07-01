@@ -155,8 +155,6 @@ func (l *Library) ScanDirectory(rootDir string) error {
 			return nil
 		}
 
-		log.Printf("Found book: %s\n", path)
-
 		exists, err := l.bookExists(path)
 		if err != nil {
 			return err
@@ -178,6 +176,7 @@ func (l *Library) bookExists(filePath string) (bool, error) {
 func (l *Library) addBook(filePath string) error {
 	title := l.extractTitle(filePath)
 	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(filePath)), ".")
+	log.Printf("Adding book(%s): %s (%s)\n", filePath, title, format)
 
 	_, err := l.DB.Exec(`
 		INSERT INTO books (filepath, title, format)
@@ -191,25 +190,22 @@ func (l *Library) extractTitle(filePath string) string {
 	out, err := cmd.Output()
 	if err != nil {
 		log.Printf("Error executing exiftool on %s: %v", filePath, err)
-		return filepath.Base(filePath) // Return filename as fallback
 	}
-	title := string(out)
+	title := strings.TrimSpace(string(out))
 
-	if strings.TrimSpace(title) == "" {
+	if title == "" {
 		cmd := exec.Command("exiftool", filePath)
 		fullOut, err := cmd.Output()
 		if err != nil {
 			log.Printf("Error executing exiftool for full output on %s: %v", filePath, err)
-			// Fallback to filename without extension
-			title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 		} else {
 			scanner := bufio.NewScanner(strings.NewReader(string(fullOut)))
 			for scanner.Scan() {
 				line := scanner.Text()
-				if strings.Contains(line, "Book-title:") {
+				if strings.Contains(strings.ToLower(line), "book-title:") {
 					parts := strings.SplitN(line, ":", 2)
 					if len(parts) > 1 {
-						title = parts[1]
+						title = strings.TrimSpace(parts[1])
 						break // Found it, no need to scan further
 					}
 				}
@@ -217,8 +213,7 @@ func (l *Library) extractTitle(filePath string) string {
 		}
 	}
 
-	// If exiftool fails or returns empty, use filename without extension
-	if strings.TrimSpace(title) == "" {
+	if title == "" {
 		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 	}
 
