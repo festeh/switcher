@@ -20,6 +20,7 @@ import (
 type Book struct {
 	FilePath string `json:"filepath"`
 	Title    string `json:"title"`
+	Author   string `json:"author,omitempty"`
 	Format   string `json:"format"`
 	Page     int    `json:"page,omitempty"`
 }
@@ -77,12 +78,23 @@ func (l *Library) initSchema() error {
 	CREATE TABLE IF NOT EXISTS books (
 		filepath TEXT UNIQUE NOT NULL,
 		title TEXT NOT NULL,
+		author TEXT,
 		format TEXT NOT NULL
 	);
 	CREATE INDEX IF NOT EXISTS idx_books_filepath ON books(filepath);
 	`
 	_, err := l.DB.Exec(query)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Add author column to existing table if it doesn't exist
+	_, err = l.DB.Exec(`ALTER TABLE books ADD COLUMN author TEXT DEFAULT ''`)
+	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+		log.Printf("Warning: Could not add author column (may already exist): %v", err)
+	}
+
+	return nil
 }
 
 func (l *Library) ResetDatabase() error {
@@ -175,13 +187,19 @@ func (l *Library) bookExists(filePath string) (bool, error) {
 
 func (l *Library) addBook(filePath string) error {
 	title := l.extractTitle(filePath)
+	author := l.extractAuthor(filePath)
 	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(filePath)), ".")
-	log.Printf("Adding book(%s): %s (%s)\n", filePath, title, format)
+	
+	authorInfo := ""
+	if author != "" {
+		authorInfo = " by " + author
+	}
+	log.Printf("Adding book(%s): %s%s (%s)\n", filePath, title, authorInfo, format)
 
 	_, err := l.DB.Exec(`
-		INSERT INTO books (filepath, title, format)
-		VALUES (?, ?, ?)`,
-		filePath, title, format)
+		INSERT INTO books (filepath, title, author, format)
+		VALUES (?, ?, ?, ?)`,
+		filePath, title, author, format)
 	return err
 }
 
@@ -218,6 +236,58 @@ func (l *Library) extractTitle(filePath string) string {
 	}
 
 	return strings.TrimSpace(title)
+}
+
+func (l *Library) extractAuthor(filePath string) string {
+	// First try to get Author field directly
+	cmd := exec.Command("exiftool", "-s", "-s", "-s", "-Author", filePath)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Printf("Error executing exiftool on %s: %v", filePath, err)
+	}
+	author := strings.TrimSpace(string(out))
+
+	// If Author is empty, try other common author fields
+	if author == "" {
+		authorFields := []string{"-Creator", "-Writer", "-dc:Creator"}
+		for _, field := range authorFields {
+			cmd := exec.Command("exiftool", "-s", "-s", "-s", field, filePath)
+			out, err := cmd.Output()
+			if err == nil {
+				author = strings.TrimSpace(string(out))
+				if author != "" {
+					break
+				}
+			}
+		}
+	}
+
+	// If still empty, scan full output for author-related fields
+	if author == "" {
+		cmd := exec.Command("exiftool", filePath)
+		fullOut, err := cmd.Output()
+		if err != nil {
+			log.Printf("Error executing exiftool for full output on %s: %v", filePath, err)
+		} else {
+			scanner := bufio.NewScanner(strings.NewReader(string(fullOut)))
+			for scanner.Scan() {
+				line := scanner.Text()
+				lowerLine := strings.ToLower(line)
+				if strings.Contains(lowerLine, "book-author:") || 
+				   strings.Contains(lowerLine, "author:") || 
+				   strings.Contains(lowerLine, "creator:") ||
+				   strings.Contains(lowerLine, "writer:") {
+					parts := strings.SplitN(line, ":", 2)
+					if len(parts) > 1 {
+						author = strings.TrimSpace(parts[1])
+						break // Found it, no need to scan further
+					}
+				}
+			}
+		}
+	}
+
+	return strings.TrimSpace(author)
 }
 
 func (l *Library) SearchBooks(term string) ([]Book, error) {
@@ -258,7 +328,7 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 	}
 
 	rows, err := l.DB.Query(`
-		SELECT filepath, title, format
+		SELECT filepath, title, author, format
 		FROM books
 		ORDER BY title ASC`)
 	if err != nil {
@@ -269,7 +339,7 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 	var books []Book
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(&book.FilePath, &book.Title, &book.Format)
+		err := rows.Scan(&book.FilePath, &book.Title, &book.Author, &book.Format)
 		if err != nil {
 			return nil, err
 		}
@@ -280,6 +350,9 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 
 		if foliateBook, ok := foliateMap[book.FilePath]; ok {
 			book.Title = foliateBook.Title
+			if foliateBook.Author != "" {
+				book.Author = foliateBook.Author
+			}
 			book.Page = foliateBook.Page
 		}
 
@@ -291,7 +364,7 @@ func (l *Library) GetAllBooks() ([]Book, error) {
 
 func (l *Library) GetBooksByFormat(format string) ([]Book, error) {
 	rows, err := l.DB.Query(`
-		SELECT filepath, title,  format
+		SELECT filepath, title, author, format
 		FROM books
 		WHERE format = ?
 		ORDER BY title ASC`, format)
@@ -303,7 +376,7 @@ func (l *Library) GetBooksByFormat(format string) ([]Book, error) {
 	var books []Book
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(&book.FilePath, &book.Title, &book.Format)
+		err := rows.Scan(&book.FilePath, &book.Title, &book.Author, &book.Format)
 		if err != nil {
 			return nil, err
 		}

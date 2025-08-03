@@ -3,6 +3,7 @@ export namespace library {
 	export class Book {
 	    filepath: string;
 	    title: string;
+	    author?: string;
 	    format: string;
 	    page?: number;
 	
@@ -14,6 +15,7 @@ export namespace library {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.filepath = source["filepath"];
 	        this.title = source["title"];
+	        this.author = source["author"];
 	        this.format = source["format"];
 	        this.page = source["page"];
 	    }

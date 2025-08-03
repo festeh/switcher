@@ -36,6 +36,7 @@ type BookInfo struct {
 	Filename string `json:"filename"`
 	Page     int    `json:"page"`
 	Title    string `json:"title"`
+	Author   string `json:"author,omitempty"`
 }
 
 type FoliateMetadata struct {
@@ -115,6 +116,11 @@ func (f *Foliate) GetAllKnownBooks() (map[string]BookInfo, error) {
 			title = filepath.Base(filePath)
 		}
 
+		author := ""
+		if len(foliateBook.Metadata.Author) > 0 {
+			author = foliateBook.Metadata.Author[0].Name
+		}
+
 		page := 0
 		if len(foliateBook.Progress) > 0 {
 			page = foliateBook.Progress[0]
@@ -124,6 +130,7 @@ func (f *Foliate) GetAllKnownBooks() (map[string]BookInfo, error) {
 			Filename: filePath,
 			Page:     page,
 			Title:    title,
+			Author:   author,
 		}
 
 		books[filePath] = book
